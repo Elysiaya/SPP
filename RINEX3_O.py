@@ -15,8 +15,8 @@ class Epoch:
         self.date_minute = int(self.date_str[4])
         self.date_second = int(float(self.date_str[5]))
         self.date_microsecond = int((float(self.date_str[5]) - self.date_second) * 1000000)
-        # self.date: datetime = datetime(self.date_year, self.date_month, self.date_day, self.date_hour, self.date_minute,
-        #                                self.date_second, self.date_microsecond)
+        self.date: datetime = datetime(self.date_year, self.date_month, self.date_day, self.date_hour, self.date_minute,
+                                       self.date_second, self.date_microsecond)
         self.gpsWeek, self.gpsWIS = self.gps_NYR_WeekWIS(
             datetime(self.date_year, self.date_month, self.date_day, self.date_hour, self.date_minute,
                      self.date_second, self.date_microsecond))

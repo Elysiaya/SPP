@@ -46,10 +46,11 @@ class RINEX_N:
                 hour = int(self.lines[i][15:17])
                 minute = int(self.lines[i][18:20])
                 s = int(self.lines[i][21:23])
+                zhen.append(datetime(year=y, month=m, day=d, hour=hour, minute=minute, second=s))
 
-                gpsWeek, gpsWIS = self.gps_NYR_WeekWIS(datetime(y, m, d, hour, minute, s))
-                zhen.append(gpsWeek)
-                zhen.append(gpsWIS)
+                # gpsWeek, gpsWIS = self.gps_NYR_WeekWIS(datetime(y, m, d, hour, minute, s))
+                # zhen.append(gpsWeek)
+                # zhen.append(gpsWIS)
 
                 # zhen.append(int(self.lines[i][4:8]))
                 # zhen.append(int(self.lines[i][9:11]))
@@ -88,6 +89,11 @@ class RINEX_N:
             h += 1
             i += 1
         self.df = pandas.DataFrame(allzhen)
+        self.df.columns = ["PRN", "Toc",  "SV_clock_bias", "SV_clock_drift",
+                           "SV_clock_drift_rate", "IODE", "Crs", "Delta_n", "M0", "Cuc", "e_Eccentricity", "Cus",
+                           "sqrt_A", "Toe_Time_of_Ephemeris", "Cic", "OMEGA0", "Cis", "i0", "Crc", "omega", "OMEGA_DOT",
+                           "IDOT", "Codes_on_L2_channel", "GPS_Week", "L2_P_data_flag", "SV_accuracy", "SV_health",
+                           "TGD1", "IODC", "Transmission_time_of_message","FI"]
 
     def writfile(self, output_filename):
         f = open(output_filename, "w")

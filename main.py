@@ -1,32 +1,24 @@
 from RINEX_N import RINEX_N
 from RINEX3_O import RINEX3_O
-import pandas
+from GPS_satellite_orbit import GPS_satellite_orbit
 import datetime
-from GEO_eph import GEO_eph
-import numpy as np
 
-
-
-
-
-# rinex_n=RINEX_N("./data/BRDC00IGS_R_20242340000_01D_MN.rnx")
 rinex_n = RINEX_N("./data/BRDC00IGS_R_20242450000_01D_MN.rnx")
 rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
-GPS_Ephemeris = rinex_n.df[rinex_n.df[0].str[0] == "G"]
-GPS_observations = rinex_o.epochs[0].GPS_observations
+GPS_Ephemeris = rinex_n.df[rinex_n.df.loc[:, "PRN"].str[0] == "G"]
+
+# 获取当前观测值历元的观测时间，在广播星历中筛选出
+e = 1
+GPS_observations_date = rinex_o.epochs[e].date
+print(f"GPS observations date: {GPS_observations_date}")
 # print(GPS_Ephemeris)
-# cond = (GPS_Ephemeris[4] <= rinex_o.epochs[0].date_hour + 1) & (GPS_Ephemeris[4] >= rinex_o.epochs[0].date_hour - 1)
-#
-# cond2 = gps_NYR_WeekWIS(GPS_Ephemeris[4])[1] - gps_NYR_WeekWIS(rinex_o.epochs[0].date)[1] <= 3600
-e = 1000
-print(rinex_o.epochs[e].gpsWIS)
-print(rinex_o.epochs[e].gpsWeek)
-print(len(rinex_o.epochs))
+# 定义筛选范围为前后一个小时
+s_date = GPS_observations_date - datetime.timedelta(hours=1)
+e_date = GPS_observations_date + datetime.timedelta(hours=1)
+cond = (GPS_Ephemeris.loc[:, "Toc"] >= s_date) & (GPS_Ephemeris.loc[:, "Toc"] <= e_date)
 
-
-cond3 = (abs(GPS_Ephemeris[2]-rinex_o.epochs[e].gpsWIS) <= 3600) & (GPS_Ephemeris[1] == rinex_o.epochs[e].gpsWeek)
-
-GPS_Ephemeris = GPS_Ephemeris[cond3]
-
-print(GPS_Ephemeris)
-
+GPS_Ephemeris = GPS_Ephemeris[cond].reset_index(drop=True)
+# print(GPS_Ephemeris.loc[0].tolist())
+for column_name,GPS_Ephemeris_single in GPS_Ephemeris.iterrows():
+    GEO = GPS_satellite_orbit(GPS_Ephemeris_single.tolist())
+    GEO.Run(GPS_observations_date)
