@@ -53,7 +53,7 @@ class GPS_satellite_orbit:
         # BROADCAST ORBIT – 6
         self.SV_accuracy = DataBlock[25]
         self.SV_health = DataBlock[26]
-        self.TGD1 = DataBlock[27]
+        self.TGD = DataBlock[27]
         self.IODC = DataBlock[28]
 
         # BROADCAST ORBIT – 7
@@ -63,7 +63,7 @@ class GPS_satellite_orbit:
     # 年月日转换为周内秒
     def __to_Toc(self, year: int, month: int, day, hour: int, minute: int, second) -> float:
         weekday = (datetime(year, month, day).weekday()+1) % 7
-        t = weekday * 24 * 3600 + hour * 3600 + minute * 60 + second * 60 + second
+        t = weekday * 24 * 3600 + hour * 3600 + minute * 60 + second
         return t
 
     def Run(self, t: datetime,psi):
@@ -79,8 +79,8 @@ class GPS_satellite_orbit:
         Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
         GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
         C = 2.99792458e8  # 真空中的光速（m/s）
-        print(f"GPS接收机时刻:{t}")
-        print(f"GPS星历时刻:{self.Toc}")
+        # print(f"GPS接收机时刻:{t}")
+        # print(f"GPS星历时刻:{self.Toc}")
         # 接收机时刻转换为周内秒
         t = self.__to_Toc(int(str(t.year)), int(str(t.month)), int(str(t.day)), int(str(t.hour)),
                           int(str(t.minute)), int(str(t.second)))
@@ -88,7 +88,7 @@ class GPS_satellite_orbit:
         Toe = self.Toe_Time_of_Ephemeris  # Toe与Toc时间同步
         Delta_t = t - self.Toe_Time_of_Ephemeris
         self.sat_clk_error = self.SV_clock_drift_rate * math.pow(Delta_t,
-                                                                 2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD1
+                                                                 2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD
         TSV = t - self.sat_clk_error - psi/C
         # TSV = t - self.sat_clk_error
 

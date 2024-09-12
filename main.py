@@ -11,7 +11,7 @@ rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
 GPS_Ephemeris = rinex_n.df[rinex_n.df.loc[:, "PRN"].str[0] == "G"]
 
 # 获取当前观测值历元的观测时间，在广播星历中筛选出
-e = 0
+e = 2500
 GPS_observations_date = rinex_o.epochs[e].date
 # print(f"GPS observations date: {GPS_observations_date}")
 
@@ -32,13 +32,12 @@ X0 = np.array([0, 0, 0, 0])
 C = 2.99792458e8  # 真空中的光速（m/s）
 while True:
     for o in rinex_o.epochs[e].GPS_observations:
-
         prn = o.PRN
         psi = o.pseudorange
 
         k1 = GPS_Ephemeris.loc[GPS_Ephemeris.loc[:, "PRN"] == prn].values.tolist()[0]
         GSO = GPS_satellite_orbit(k1)
-        GSO.Run(rinex_o.epochs[e].date,psi)
+        GSO.Run(rinex_o.epochs[e].date, psi)
         dtrop = 0  # 对流层延迟改正量
         diono = 0  # 电离层延迟改正量
         D_RTCM = 0  # 对伪距差分改正值
@@ -46,7 +45,7 @@ while True:
         dtsi = GSO.sat_clk_error
         #
         R = math.sqrt((X0[0] - GSO.satellite_position[0]) ** 2 + (X0[1] - GSO.satellite_position[1]) ** 2 + (
-                    X0[2] - GSO.satellite_position[2]) ** 2)
+                X0[2] - GSO.satellite_position[2]) ** 2)
 
         b0si = (X0[0] - GSO.satellite_position[0]) / R
         b1si = (X0[1] - GSO.satellite_position[1]) / R
@@ -57,7 +56,6 @@ while True:
         lsi.append(l)
         list1 = [b0si, b1si, b2si, b3si]
         A.append(list1)
-
 
     A = np.array(A)
     L = np.array(lsi)
@@ -75,7 +73,8 @@ while True:
         # print(f"X0: {X0}")
         print(f"接收机坐标为:{[X0[0], X0[1], X0[2]]}")
 
-        print(f"偏差值{math.sqrt((X0[0]-2919785.7120)**2+(X0[1]--5383745.0670)**2+(X0[2]-1774604.6920)**2)}m")
+        print(
+            f"偏差值{math.sqrt((X0[0] - 2919785.7120) ** 2 + (X0[1] - -5383745.0670) ** 2 + (X0[2] - 1774604.6920) ** 2)}m")
 
-        print(f"接收机钟差为:{X0[3]/3e+8}")
+        print(f"接收机钟差为:{X0[3] / 3e+8}")
         break
