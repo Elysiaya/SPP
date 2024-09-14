@@ -60,13 +60,17 @@ class GPS_satellite_orbit:
         self.Transmission_time_of_message = DataBlock[29]
         self.FI = DataBlock[30]
 
-    # 年月日转换为周内秒
-    def __to_Toc(self, year: int, month: int, day, hour: int, minute: int, second) -> float:
-        weekday = (datetime(year, month, day).weekday()+1) % 7
-        t = weekday * 24 * 3600 + hour * 3600 + minute * 60 + second
-        return t
+    def NYR2GPST(self, t: datetime) -> float:
+        """
+        年月日转GPS时，注意二者都应该在GPS时间系统下，该函数未考虑闰秒情况
+        :param t:
+        :return:
+        """
+        GPST_start_date = datetime(1980, 1, 6)
+        delta_t = t - GPST_start_date
+        return delta_t.total_seconds()
 
-    def Run(self, t: datetime,psi):
+    def Run(self, t: datetime, psi):
         """
         Run the satellite orbit
         :param t: 接收机时刻(GPST)
@@ -81,15 +85,14 @@ class GPS_satellite_orbit:
         C = 2.99792458e8  # 真空中的光速（m/s）
         # print(f"GPS接收机时刻:{t}")
         # print(f"GPS星历时刻:{self.Toc}")
-        # 接收机时刻转换为周内秒
-        t = self.__to_Toc(int(str(t.year)), int(str(t.month)), int(str(t.day)), int(str(t.hour)),
-                          int(str(t.minute)), int(str(t.second)))
+        # 接收机时刻转换为GPS时，单位秒
+        t = self.NYR2GPST(t)
 
-        Toe = self.Toe_Time_of_Ephemeris  # Toe与Toc时间同步
-        Delta_t = t - self.Toe_Time_of_Ephemeris
+        Toe = self.Toe_Time_of_Ephemeris + self.GPS_Week*7*24*3600  # Toe与Toc时间同步
+        Delta_t = t - Toe
         self.sat_clk_error = self.SV_clock_drift_rate * math.pow(Delta_t,
                                                                  2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD
-        TSV = t - self.sat_clk_error - psi/C
+        TSV = t - self.sat_clk_error - psi / C
         # TSV = t - self.sat_clk_error
 
         # 计算规划时间，Tk等于发射时刻与参考时刻的时间差
@@ -132,7 +135,7 @@ class GPS_satellite_orbit:
         r = a * (1 - self.e_Eccentricity * math.cos(E)) + Delta_r
         i = self.i0 + self.IDOT * Tk + Delta_i
         # 升交点赤经
-        omega = self.OMEGA0 + (self.OMEGA_DOT - Radv) * Tk - Radv * Toe
+        omega = self.OMEGA0 + (self.OMEGA_DOT - Radv) * Tk - Radv * (Toe-self.GPS_Week*7*24*3600)
         # 计算Tsv时刻的卫星位置
         X = math.cos(u) * r * math.cos(omega) - math.sin(u) * r * math.cos(i) * math.sin(omega)
         Y = math.cos(u) * r * math.sin(omega) + math.sin(u) * r * math.cos(i) * math.cos(omega)

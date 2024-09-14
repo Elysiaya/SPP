@@ -11,7 +11,7 @@ rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
 GPS_Ephemeris = rinex_n.df[rinex_n.df.loc[:, "PRN"].str[0] == "G"]
 
 # 获取当前观测值历元的观测时间，在广播星历中筛选出
-e = 500
+e = 1
 GPS_observations_date = rinex_o.epochs[e].date
 # print(f"GPS observations date: {GPS_observations_date}")
 
@@ -37,7 +37,7 @@ while True:
 
         k1 = GPS_Ephemeris_by_date.loc[GPS_Ephemeris_by_date.loc[:, "PRN"] == prn].values.tolist()[0]
         GSO = GPS_satellite_orbit(k1)
-        GSO.Run(rinex_o.epochs[e].date, psi)
+        GSO.Run(GPS_observations_date, psi)
         dtrop = 0  # 对流层延迟改正量
         diono = 0  # 电离层延迟改正量
         D_RTCM = 0  # 对伪距差分改正值
