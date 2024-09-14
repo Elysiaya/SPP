@@ -1,7 +1,5 @@
 from datetime import datetime
 import math
-import numpy as np
-import pandas as pd
 
 
 class GPS_satellite_orbit:
