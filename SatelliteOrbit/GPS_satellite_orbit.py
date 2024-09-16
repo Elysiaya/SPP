@@ -4,6 +4,7 @@ import math
 
 class GPS_satellite_orbit:
     def __init__(self, DataBlock: list) -> None:
+        self.sat_clk_error = None
         self.satellite_position = None
 
         # SV /EPOCH / SV CLK

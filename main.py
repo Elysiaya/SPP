@@ -1,6 +1,6 @@
 from RINEX_N import RINEX_N
 from RINEX3_O import RINEX3_O
-from GPS_satellite_orbit import GPS_satellite_orbit
+from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 import datetime
 import math
 import numpy as np
@@ -18,7 +18,7 @@ GPS_observations_date = rinex_o.epochs[e].date
 # 定义筛选范围为前后一个小时
 s_date = GPS_observations_date - datetime.timedelta(hours=1)
 e_date = GPS_observations_date + datetime.timedelta(hours=1)
-cond = (GPS_Ephemeris.loc[:, "Toc"] >= s_date) & (GPS_Ephemeris.loc[:, "Toc"] <= e_date)
+cond = (GPS_Ephemeris["Toc"] >= s_date) & (GPS_Ephemeris["Toc"] <= e_date)
 GPS_Ephemeris_by_date = GPS_Ephemeris[cond].reset_index(drop=True)
 
 # # 计算卫星位置
@@ -35,7 +35,7 @@ while True:
         prn = o.PRN
         psi = o.pseudorange
 
-        k1 = GPS_Ephemeris_by_date.loc[GPS_Ephemeris_by_date.loc[:, "PRN"] == prn].values.tolist()[0]
+        k1 = GPS_Ephemeris_by_date.loc[GPS_Ephemeris_by_date["PRN"] == prn].values.tolist()[0]
         GSO = GPS_satellite_orbit(k1)
         GSO.Run(GPS_observations_date, psi)
         dtrop = 0  # 对流层延迟改正量

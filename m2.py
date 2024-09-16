@@ -1,6 +1,6 @@
 from RINEX_N import RINEX_N
 from RINEX3_O import RINEX3_O
-from GPS_satellite_orbit import GPS_satellite_orbit
+from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 import datetime
 import math
 import numpy as np
