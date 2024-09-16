@@ -118,7 +118,7 @@ class GPS_satellite_orbit:
             elif E > 2 * math.pi:
                 E = E - 2 * math.pi
 
-            if E > 0 and E < 2 * math.pi:
+            if 0 < E < 2 * math.pi:
                 break
 
         # 求解真近点角和升交点角距
