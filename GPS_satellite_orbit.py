@@ -71,6 +71,7 @@ class GPS_satellite_orbit:
     def Run(self, t: datetime, psi):
         """
         Run the satellite orbit
+        :param psi: 伪距，用于计算发射时间
         :param t: 接收机时刻(GPST)
         :return:
         """
