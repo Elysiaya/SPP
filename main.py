@@ -1,4 +1,4 @@
-from RINEX.RINEX_N import RINEX_N
+from RINEX.RINEX3_N import RINEX_N
 from RINEX.RINEX3_O import RINEX3_O
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 import datetime
