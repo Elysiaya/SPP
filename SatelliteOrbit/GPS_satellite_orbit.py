@@ -1,5 +1,5 @@
-from datetime import datetime
 import math
+from datetime import datetime
 
 
 class GPS_satellite_orbit:

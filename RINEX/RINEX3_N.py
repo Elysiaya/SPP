@@ -1,5 +1,6 @@
-import pandas
 from datetime import datetime
+
+import pandas
 
 
 class RINEX_N:
