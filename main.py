@@ -1,9 +1,10 @@
-from RINEX_N import RINEX_N
-from RINEX3_O import RINEX3_O
+from RINEX.RINEX_N import RINEX_N
+from RINEX.RINEX3_O import RINEX3_O
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 import datetime
 import math
 import numpy as np
+
 # 读取文件
 rinex_n = RINEX_N("./data/BRDC00IGS_R_20242450000_01D_MN.rnx")
 rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
@@ -11,7 +12,7 @@ rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
 GPS_Ephemeris = rinex_n.df[rinex_n.df.loc[:, "PRN"].str[0] == "G"]
 
 # 获取当前观测值历元的观测时间，在广播星历中筛选出
-e = 500
+e = 23
 GPS_observations_date = rinex_o.epochs[e].date
 # print(f"GPS observations date: {GPS_observations_date}")
 
@@ -27,9 +28,11 @@ GPS_Ephemeris_by_date = GPS_Ephemeris[cond].reset_index(drop=True)
 #     GEO.Run(GPS_observations_date)
 
 lsi = []
-A = []
+Alist = []
 X0 = np.array([0, 0, 0, 0])
 C = 2.99792458e8  # 真空中的光速（m/s）
+ff = rinex_o.epochs[e].GPS_observations
+迭代次数 = 1
 while True:
     for o in rinex_o.epochs[e].GPS_observations:
         prn = o.PRN
@@ -55,9 +58,9 @@ while True:
         l = psi - R + C * dtsi - dtrop - diono + D_RTCM
         lsi.append(l)
         list1 = [b0si, b1si, b2si, b3si]
-        A.append(list1)
+        Alist.append(list1)
 
-    A = np.array(A)
+    A = np.array(Alist)
     L = np.array(lsi)
 
     # print(L)
@@ -68,10 +71,10 @@ while True:
     if Xi[0] > 0.001 or Xi[1] > 0.001 or Xi[2] > 0.001:
         X0 = X0 + Xi
         lsi = []
-        A = []
+        Alist = []
     else:
         # print(f"X0: {X0}")
-        print(f"接收机坐标为:{[X0[0], X0[1], X0[2]]}")
+        print(f"接收机坐标为:{X0}")
 
         print(
             f"偏差值{math.sqrt((X0[0] - 2919785.7120) ** 2 + (X0[1] - -5383745.0670) ** 2 + (X0[2] - 1774604.6920) ** 2)}m")

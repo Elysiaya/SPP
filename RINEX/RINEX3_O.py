@@ -1,4 +1,5 @@
 from datetime import datetime
+from SatelliteObservations.Satellite_observations import *
 
 
 class Epoch:
@@ -23,12 +24,12 @@ class Epoch:
         # self.time =time.mktime()
         self.epoch_flag = int(self.date_str[6])
         self.satellites_number = int(self.date_str[7])  # 卫星数量
-        self.satellites_observations: list[Satellite_observations] = [Satellite_observations(s) for s in s_info]
+        # self.satellites_observations: list[Satellite_observations] = [Satellite_observations(s) for s in s_info]
 
-        self.GPS_observations = [Satellite_observations(s) for s in s_info if s_info if s[0] == "G"]
-        self.BDS_observations = [Satellite_observations(s) for s in s_info if s_info if s[0] == "C"]
-        self.Galileo_observations = [Satellite_observations(s) for s in s_info if s_info if s[0] == "E"]
-        self.GLONASS_observations = [Satellite_observations(s) for s in s_info if s_info if s[0] == "R"]
+        self.GPS_observations = [GPS_Satellite_observations(s) for s in s_info if s[0] == "G"]
+        self.BDS_observations = [BDS_Satellite_observations(s) for s in s_info if s[0] == "C"]
+        self.Galileo_observations = [Galileo_Satellite_observations(s) for s in s_info if s[0] == "E"]
+        self.GLONASS_observations = [GLONASS_Satellite_observations(s) for s in s_info if s[0] == "R"]
 
     def gps_NYR_WeekWIS(self, gpsNYR: datetime):
         gpsBeginUTC = datetime(1980, 1, 6, 0, 0, 0)
@@ -36,13 +37,6 @@ class Epoch:
         gpsWeek = int(interval.total_seconds() / (24 * 60 * 60))
         gpsWIS = interval.total_seconds() % (24 * 60 * 60)
         return gpsWeek, gpsWIS
-
-
-class Satellite_observations:
-    def __init__(self, o: str) -> None:
-        temp = list(filter(None, o.split(" ")))
-        self.PRN = temp[0]
-        self.pseudorange = float(temp[1])
 
 
 class RINEX3_O:
@@ -78,6 +72,6 @@ class RINEX3_O:
 
 
 if __name__ == "__main__":
-    r3 = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
+    r3 = RINEX3_O("../data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
     print(r3.epochs[0].satellites_observations[0].PRN)
     print(r3.epochs[0].satellites_observations[0].pseudorange)
