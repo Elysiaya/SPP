@@ -43,12 +43,15 @@ class Epoch:
 class RINEX3_O:
     def __init__(self, filename) -> None:
         self.header = ""
+        self.APPROX_POSITION = None
+        self.epochs: list[Epoch] = []
+        self.RINEX_VERSION: str = ""
+
         self.read_observation_file(filename)
         print("观测文件读取成功,文件名:" + filename)
         print("RINEX文件版本:" + self.RINEX_VERSION)
 
     def read_observation_file(self, filename):
-        self.epochs: list[Epoch] = []
         dateinfo = ""
         s_info = []
         with open(filename, "r") as f:
@@ -58,12 +61,17 @@ class RINEX3_O:
         for line_str in lines:
             if is_header_data:
                 self.header += line_str
+                if "APPROX POSITION" in line_str:
+                    self.APPROX_POSITION = list(filter(None, line_str.split(" ")))[0:3]
+                    self.APPROX_POSITION = [float(i) for i in self.APPROX_POSITION]
+
                 if "END OF HEADER" in line_str:
                     is_header_data = False
             else:
                 if ">" in line_str:
                     dateinfo = line_str[2:-1]
-                    n = int(dateinfo.split(" ")[-1])
+
+                    n = int(list(filter(None, dateinfo.split(" ")))[7])
                 else:
                     s_info.append(line_str)
                     if len(s_info) == n:
@@ -74,5 +82,5 @@ class RINEX3_O:
 
 if __name__ == "__main__":
     r3 = RINEX3_O("../data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
-    print(r3.epochs[0].satellites_observations[0].PRN)
-    print(r3.epochs[0].satellites_observations[0].pseudorange)
+    print(r3.epochs[0].GPS_observations[0].PRN)
+    print(r3.epochs[0].GPS_observations[0].pseudorange)

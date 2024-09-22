@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas
 
 
-class RINEX_N:
+class RINEX3_N:
     def __init__(self, filename) -> None:
         self.header = ""
         self.df = pandas.DataFrame()
@@ -118,7 +118,7 @@ class RINEX_N:
 
 if __name__ == "__main__":
     # h = header_data("ABPO00MDG_R_20240420000_01D_CN.rnx")
-    r = RINEX_N("../data/BRDC00IGS_R_20242450000_01D_MN.rnx")
+    r = RINEX3_N("../data/BRDC00IGS_R_20242450000_01D_MN.rnx")
     # 提取所有GPS星历
     # print(r.df.loc[0:10,["PRN","Toc","SV_clock_bias","SV_clock_drift"]])
     print(r.df.loc[0]["PRN"])
