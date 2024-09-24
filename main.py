@@ -45,7 +45,7 @@ rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
 # 筛选GPS卫星
 GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 
-e = 0
+e = 510
 # 选取单个历元进行计算
 obs = rinex_o.epochs[e].GPS_observations
 # 获取当前观测值历元的观测时间，在广播星历中筛选出
@@ -58,7 +58,7 @@ cond = (GPS_Ephemeris["Toc"] >= s_date) & (GPS_Ephemeris["Toc"] <= e_date)
 GPS_Ephemeris_by_date = GPS_Ephemeris[cond].reset_index(drop=True)
 
 # 初始化，置测站位置为0，0，0，接收机钟差为dtr
-X0 = [0, 0, 0, 0]
+X0 = [1, 1, 1, 0]
 A = []
 L = []
 P = []
@@ -93,7 +93,7 @@ while True:
             else:
                 t0si = t1si
 
-        print(f"satellite_position = {satellite_position}")
+        # print(f"satellite_position = {satellite_position}")
 
         R = Rsr
         b0si = (X0[0] - satellite_position[0]) / R
@@ -104,9 +104,10 @@ while True:
         try:
             # 计算对流层延迟
             R_s, A_s, H_s, B_r = XYZ2ENU(satellite_position, X0[0:3])
-            dtrop = Saastamoinen(H_s, 0, B_r,0.5*math.pi-H_s)
+            dtrop = Saastamoinen(H_s, 0, B_r, 0.5*math.pi-H_s)
             P.append(H_s)
         except:
+            print("//////")
             dtrop = 0
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
@@ -116,7 +117,8 @@ while True:
     L = np.array(L)
     # 权阵
     # if len(P) == A.shape[0]:
-    #     P = np.diag(P)
+    #     P = np.diag([0.5*math.pi-i for i in P])
+    #     print(P)
     # else:
     #     P = np.diag([1 for i in range(A.shape[0])])
     P = np.diag([1 for i in range(A.shape[0])])
@@ -128,7 +130,13 @@ while True:
         P = []
     else:
         print(f"接收机坐标为:{X0}")
-        print(
-            f"偏差:{math.sqrt((X0[0] - rinex_o.APPROX_POSITION[0]) ** 2 + (X0[1] - rinex_o.APPROX_POSITION[1]) ** 2 + (X0[2] - rinex_o.APPROX_POSITION[2]) ** 2)}")
-        print(f"接收机钟差为:{X0[3] / 3e+8}")
+        # print(
+        #     f"总偏差:{math.sqrt((X0[0] - rinex_o.APPROX_POSITION[0]) ** 2 + (X0[1] - rinex_o.APPROX_POSITION[1]) ** 2 + (X0[2] - rinex_o.APPROX_POSITION[2]) ** 2)}")
+        # print(f"平面偏差={math.sqrt((X0[0] - rinex_o.APPROX_POSITION[0]) ** 2 + (X0[1] - rinex_o.APPROX_POSITION[1]) ** 2)}")
+        # print(f"高度偏差={X0[2] - rinex_o.APPROX_POSITION[2]}")
+        print(f"接收机钟差为:{X0[3] / C}")
+        G = np.linalg.inv(A.T @ A)
+        HDOP = math.sqrt(G[0][0] + G[1][1])
+        print(HDOP)
+
         break

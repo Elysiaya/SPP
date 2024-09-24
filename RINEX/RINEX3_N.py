@@ -96,15 +96,6 @@ class RINEX3_N:
                            "IDOT", "Codes_on_L2_channel", "GPS_Week", "L2_P_data_flag", "SV_accuracy", "SV_health",
                            "TGD1", "IODC", "Transmission_time_of_message", "FI"]
 
-    def writfile(self, output_filename):
-        f = open(output_filename, "w")
-        for line in self.df:
-            for s in line:
-                f.write(s)
-                f.write(" ")
-            f.write("\n")
-        f.close()
-
     def print_header(self):
         print(self.header)
 
