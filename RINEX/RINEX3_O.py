@@ -1,9 +1,23 @@
 from datetime import datetime
 
-from SatelliteObservations.Satellite_observations import *
+from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
 
 
 class Epoch:
+    def __set_GPS_observations(self, GPS_observations_str: list[str]) -> list[GPS_Satellite_observations]:
+        GPS_observations = []
+        for s in GPS_observations_str:
+            if s[0] == "G" and " " not in s[5:17]:
+                GPS_observations.append(GPS_Satellite_observations(s))
+        return GPS_observations
+
+    def gps_NYR_WeekWIS(self, gpsNYR: datetime):
+        gpsBeginUTC = datetime(1980, 1, 6, 0, 0, 0)
+        interval = gpsNYR - gpsBeginUTC
+        gpsWeek = int(interval.total_seconds() / (24 * 60 * 60))
+        gpsWIS = interval.total_seconds() % (24 * 60 * 60)
+        return gpsWeek, gpsWIS
+
     #  C伪距;L载波;D多普勒;S信号强度
     # https://blog.csdn.net/Gou_Hailong/article/details/120911467
     def __init__(self, dateinfo: str, s_info: list[str]) -> None:
@@ -27,17 +41,10 @@ class Epoch:
         self.satellites_number = int(self.date_str[7])  # 卫星数量
         # self.satellites_observations: list[Satellite_observations] = [Satellite_observations(s) for s in s_info]
 
-        self.GPS_observations = [GPS_Satellite_observations(s) for s in s_info if s[0] == "G"]
-        self.BDS_observations = [BDS_Satellite_observations(s) for s in s_info if s[0] == "C"]
-        self.Galileo_observations = [Galileo_Satellite_observations(s) for s in s_info if s[0] == "E"]
-        self.GLONASS_observations = [GLONASS_Satellite_observations(s) for s in s_info if s[0] == "R"]
-
-    def gps_NYR_WeekWIS(self, gpsNYR: datetime):
-        gpsBeginUTC = datetime(1980, 1, 6, 0, 0, 0)
-        interval = gpsNYR - gpsBeginUTC
-        gpsWeek = int(interval.total_seconds() / (24 * 60 * 60))
-        gpsWIS = interval.total_seconds() % (24 * 60 * 60)
-        return gpsWeek, gpsWIS
+        self.GPS_observations = self.__set_GPS_observations(s_info)
+        # self.BDS_observations = [BDS_Satellite_observations(s) for s in s_info if s[0] == "C"]
+        # self.Galileo_observations = [Galileo_Satellite_observations(s) for s in s_info if s[0] == "E"]
+        # self.GLONASS_observations = [GLONASS_Satellite_observations(s) for s in s_info if s[0] == "R"]
 
 
 class RINEX3_O:

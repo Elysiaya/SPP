@@ -41,11 +41,12 @@ C = 2.99792458e8  # 真空中的光速（m/s）
 
 # 读取文件
 rinex_n = RINEX3_N("./data/BRDC00IGS_R_20242450000_01D_MN.rnx")
-rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
+# rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
+rinex_o = RINEX3_O("./data/GENO00ITA_R_20242450000_01D_30S_MO.rnx")
 # 筛选GPS卫星
 GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 
-e = 510
+e = 10
 # 选取单个历元进行计算
 obs = rinex_o.epochs[e].GPS_observations
 # 获取当前观测值历元的观测时间，在广播星历中筛选出
@@ -66,6 +67,7 @@ while True:
     for o in obs:
         # 卫星PRN
         PRN = o.PRN
+        # print(PRN)
         # 卫星伪距
         pseudo_range = o.pseudorange
         # 选择对应的星历
