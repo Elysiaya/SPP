@@ -40,13 +40,12 @@ GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
 C = 2.99792458e8  # 真空中的光速（m/s）
 
 # 读取文件
-rinex_n = RINEX3_N("./data/BRDC00IGS_R_20242450000_01D_MN.rnx")
-# rinex_o = RINEX3_O("./data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
-rinex_o = RINEX3_O("./data/GENO00ITA_R_20242450000_01D_30S_MO.rnx")
+rinex_n = RINEX3_N("./data/N/BRDM00DLR_S_20242640000_01D_MN.rnx")
+rinex_o = RINEX3_O("./data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
 # 筛选GPS卫星
 GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 
-e = 10
+e = 30
 # 选取单个历元进行计算
 obs = rinex_o.epochs[e].GPS_observations
 # 获取当前观测值历元的观测时间，在广播星历中筛选出
@@ -134,11 +133,14 @@ while True:
         print(f"接收机坐标为:{X0}")
         # print(
         #     f"总偏差:{math.sqrt((X0[0] - rinex_o.APPROX_POSITION[0]) ** 2 + (X0[1] - rinex_o.APPROX_POSITION[1]) ** 2 + (X0[2] - rinex_o.APPROX_POSITION[2]) ** 2)}")
-        # print(f"平面偏差={math.sqrt((X0[0] - rinex_o.APPROX_POSITION[0]) ** 2 + (X0[1] - rinex_o.APPROX_POSITION[1]) ** 2)}")
         # print(f"高度偏差={X0[2] - rinex_o.APPROX_POSITION[2]}")
+        STA_X = -0.226775027647810E+07
+        STA_Y = 0.500915448294720E+07
+        STA_Z = 0.322129434237148E+07
+        print(f"平面偏差={math.sqrt((X0[0] - STA_X) ** 2 + (X0[1] - STA_Y) ** 2)}")
         print(f"接收机钟差为:{X0[3] / C}")
-        G = np.linalg.inv(A.T @ A)
-        HDOP = math.sqrt(G[0][0] + G[1][1])
-        print(HDOP)
+        # G = np.linalg.inv(A.T @ A)
+        # HDOP = math.sqrt(G[0][0] + G[1][1])
+        # print(HDOP)
 
         break

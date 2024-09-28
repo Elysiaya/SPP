@@ -36,8 +36,12 @@ class RINEX3_N:
         i = data_start_lines
         # for i in range(data_start_lines,len(self.lines)):
         while i < len(self.lines):
+            # print(self.lines[i])
             if self.lines[i][0] == "S" or self.lines[i][0] == "R":
                 i += 4
+                continue
+            if self.lines[i][0] == "I":
+                i += 8
                 continue
             if h == 1:
                 zhen.append(self.lines[i][0:3])
@@ -49,17 +53,6 @@ class RINEX3_N:
                 s = int(self.lines[i][21:23])
                 zhen.append(datetime(year=y, month=m, day=d, hour=hour, minute=minute, second=s))
 
-                # gpsWeek, gpsWIS = self.gps_NYR_WeekWIS(datetime(y, m, d, hour, minute, s))
-                # zhen.append(gpsWeek)
-                # zhen.append(gpsWIS)
-
-                # zhen.append(int(self.lines[i][4:8]))
-                # zhen.append(int(self.lines[i][9:11]))
-                # zhen.append(int(self.lines[i][12:14]))
-                # zhen.append(int(self.lines[i][15:17]))
-                # zhen.append(int(self.lines[i][18:20]))
-                # zhen.append(int(self.lines[i][21:23]))
-
                 zhen.append(float(self.lines[i][23:42]))
                 zhen.append(float(self.lines[i][42:61]))
                 zhen.append(float(self.lines[i][61:80]))
@@ -68,7 +61,10 @@ class RINEX3_N:
                     zhen.append(float(self.lines[i][4:4 + 19]))
                     zhen.append(float(self.lines[i][4 + 19 * 1:4 + 19 * 2]))
                     zhen.append(float(self.lines[i][4 + 19 * 2:4 + 19 * 3]))
-                    zhen.append(float(self.lines[i][4 + 19 * 3:4 + 19 * 4]))
+                    try:
+                        zhen.append(float(self.lines[i][4 + 19 * 3:4 + 19 * 4]))
+                    except ValueError:
+                        zhen.append(None)
                 elif len(self.lines[i]) == 62:  # Galileo satellite可能出现数据缺失的情况
                     zhen.append(float(self.lines[i][4:4 + 19]))
                     zhen.append(float(self.lines[i][4 + 19 * 1:4 + 19 * 2]))
@@ -79,7 +75,10 @@ class RINEX3_N:
                 # print(len(self.lines[i]))
                 if len(self.lines[i]) == 81 or len(self.lines[i]) == 43:
                     zhen.append(float(self.lines[i][4:4 + 19]))
-                    zhen.append(float(self.lines[i][4 + 19 * 1:4 + 19 * 2]))
+                    if "  " not in self.lines[i][4 + 19 * 1:4 + 19 * 2]:
+                        zhen.append(float(self.lines[i][4 + 19 * 1:4 + 19 * 2]))
+                    else:
+                        zhen.append(None)
 
                 elif len(self.lines[i]) == 24:
                     zhen.append(float(self.lines[i][4:4 + 19]))
