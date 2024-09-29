@@ -3,6 +3,11 @@ import math
 
 
 def xyz2blh(xyz):  # 空间直角坐标转换为大地坐标
+    """
+    Converts XYZ coordinates to BLH coordinates
+    :param xyz:
+    :return:
+    """
     blh = [0, 0, 0]
     # 长半轴
     a = 6378137.0
@@ -33,16 +38,16 @@ def xyz2blh(xyz):  # 空间直角坐标转换为大地坐标
     return blh
 
 
-def XYZ2ENU(Xs, Xr):
+def XYZ2ENU(X_satellite: list[float], X_receiver: list[float]):
     """
     计算卫星的站心坐标,所有角度以弧度制表示
-    :param Xs: 卫星在ECEF中的坐标向量XYZ
-    :param Xr: 接收机在ECEF中的坐标向量XYZ
+    :param X_satellite: 卫星在ECEF中的坐标向量XYZ
+    :param X_receiver: 接收机在ECEF中的坐标向量XYZ
     :return:r为卫星向径，A为卫星方位角，h为卫星的高度角。
     """
-    B, L, _ = xyz2blh(Xr)
-    s = np.array(Xs)
-    r = np.array(Xr)
+    B, L, _ = xyz2blh(X_receiver)
+    s = np.array(X_satellite)
+    r = np.array(X_receiver)
     R = np.array([[-math.sin(L), math.cos(L), 0], [-math.sin(B) * math.cos(L), -math.sin(B) * math.sin(L), math.cos(B)],
                   [math.cos(B) * math.cos(L), math.cos(B) * math.sin(L), math.sin(B)]])
 
