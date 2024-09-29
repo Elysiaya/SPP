@@ -6,6 +6,7 @@ import numpy as np
 from RINEX.RINEX3_N import RINEX3_N
 from RINEX.RINEX3_O import RINEX3_O
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
+from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
 from XYZ2ENU import XYZ2ENU
 
 
@@ -45,13 +46,19 @@ rinex_o = RINEX3_O("./data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
 # 筛选GPS卫星
 GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 
-e = 30
-# 选取单个历元进行计算
-obs = rinex_o.epochs[e].GPS_observations
-# 获取当前观测值历元的观测时间，在广播星历中筛选出
-GPS_observations_date = rinex_o.epochs[e].date
+# e = 30
+# # 选取单个历元进行计算
+# obs = rinex_o.epochs[e].GPS_observations
+# # 获取当前观测值历元的观测时间，在广播星历中筛选出
+# GPS_observations_date = rinex_o.epochs[e].date
 
-# 定义筛选范围为前后一个小时
+# 根据时间筛选历元
+GPS_observations_date = datetime.datetime(2024, 9, 20, 0, 0,30)
+GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
+observations = GPS_observations
+print(f"共有 {observations.shape[0]} 颗卫星")
+
+# 筛选星历，定义筛选范围为前后一个小时
 s_date = GPS_observations_date - datetime.timedelta(hours=1)
 e_date = GPS_observations_date + datetime.timedelta(hours=1)
 cond = (GPS_Ephemeris["Toc"] >= s_date) & (GPS_Ephemeris["Toc"] <= e_date)
@@ -63,12 +70,12 @@ A = []
 L = []
 P = []
 while True:
-    for o in obs:
+    for _,observation in observations.iterrows():
+        obs1 = GPS_Satellite_observations(observation)
         # 卫星PRN
-        PRN = o.PRN
-        # print(PRN)
+        PRN = obs1.PRN
         # 卫星伪距
-        pseudo_range = o.pseudorange
+        pseudo_range = obs1.pseudorange
         # 选择对应的星历
         Ephemeris = GPS_Ephemeris_by_date[GPS_Ephemeris_by_date["PRN"] == PRN].iloc[0].tolist()
         GSO = GPS_satellite_orbit(Ephemeris)
@@ -110,6 +117,7 @@ while True:
         except:
             print("//////")
             dtrop = 0
+        dtrop = 0
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
         l = pseudo_range - R + C * dts - dtrop - diono + D_RTCM

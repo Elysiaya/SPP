@@ -1,93 +1,136 @@
 from datetime import datetime
+import math
+
+import pandas
 
 from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
-
-
-class Epoch:
-    def __set_GPS_observations(self, GPS_observations_str: list[str]) -> list[GPS_Satellite_observations]:
-        GPS_observations = []
-        for s in GPS_observations_str:
-            if s[0] == "G" and " " not in s[5:17]:
-                GPS_observations.append(GPS_Satellite_observations(s))
-        return GPS_observations
-
-    def gps_NYR_WeekWIS(self, gpsNYR: datetime):
-        gpsBeginUTC = datetime(1980, 1, 6, 0, 0, 0)
-        interval = gpsNYR - gpsBeginUTC
-        gpsWeek = int(interval.total_seconds() / (24 * 60 * 60))
-        gpsWIS = interval.total_seconds() % (24 * 60 * 60)
-        return gpsWeek, gpsWIS
-
-    #  C伪距;L载波;D多普勒;S信号强度
-    # https://blog.csdn.net/Gou_Hailong/article/details/120911467
-    def __init__(self, dateinfo: str, s_info: list[str]) -> None:
-        # 2024 09 01 00 00  0.0000000  0 44
-        self.date_str = list(filter(None, dateinfo.split(" ")))
-        # print(self.date_str)
-        self.date_year = int(self.date_str[0])
-        self.date_month = int(self.date_str[1])
-        self.date_day = int(self.date_str[2])
-        self.date_hour = int(self.date_str[3])
-        self.date_minute = int(self.date_str[4])
-        self.date_second = int(float(self.date_str[5]))
-        self.date_microsecond = int((float(self.date_str[5]) - self.date_second) * 1000000)
-        self.date: datetime = datetime(self.date_year, self.date_month, self.date_day, self.date_hour, self.date_minute,
-                                       self.date_second, self.date_microsecond)
-        self.gpsWeek, self.gpsWIS = self.gps_NYR_WeekWIS(
-            datetime(self.date_year, self.date_month, self.date_day, self.date_hour, self.date_minute,
-                     self.date_second, self.date_microsecond))
-        # self.time =time.mktime()
-        self.epoch_flag = int(self.date_str[6])
-        self.satellites_number = int(self.date_str[7])  # 卫星数量
-        # self.satellites_observations: list[Satellite_observations] = [Satellite_observations(s) for s in s_info]
-
-        self.GPS_observations = self.__set_GPS_observations(s_info)
-        # self.BDS_observations = [BDS_Satellite_observations(s) for s in s_info if s[0] == "C"]
-        # self.Galileo_observations = [Galileo_Satellite_observations(s) for s in s_info if s[0] == "E"]
-        # self.GLONASS_observations = [GLONASS_Satellite_observations(s) for s in s_info if s[0] == "R"]
-
-
 class RINEX3_O:
     def __init__(self, filename) -> None:
         self.header = ""
         self.APPROX_POSITION = None
-        self.epochs: list[Epoch] = []
         self.RINEX_VERSION: str = ""
 
+        # 存储数据
+        # self.df=[]
+        self.gps_obs_list = []
+        self.beidou_obs_list = []
+        self.galileo_obs_list = []
+        self.glonass_obs_list = []
+
+        # 存储观测值类型
+        self.GPS_OBS_TYPE = []
+        self.BeiDou_OBS_TYPE = []
+        self.Galileo_OBS_TYPE = []
+        self.GLONASS_OBS_TYPE = []
+
         self.read_observation_file(filename)
+
+        self.gps_df = pandas.DataFrame(self.gps_obs_list, columns=["PRN", "Time"] + self.GPS_OBS_TYPE)
+        self.beidou_df = pandas.DataFrame(self.beidou_obs_list, columns=["PRN", "Time"] + self.BeiDou_OBS_TYPE)
+        self.galileo_df = pandas.DataFrame(self.galileo_obs_list, columns=["PRN", "Time"] + self.Galileo_OBS_TYPE)
+        self.glonass_df = pandas.DataFrame(self.glonass_obs_list, columns=["PRN", "Time"] + self.GLONASS_OBS_TYPE)
         print("观测文件读取成功,文件名:" + filename)
         print("RINEX文件版本:" + self.RINEX_VERSION)
 
     def read_observation_file(self, filename):
-        dateinfo = ""
-        s_info = []
         with open(filename, "r") as f:
             lines = f.readlines()
         is_header_data = True
         self.RINEX_VERSION = lines[0][0:18].strip()
+        error_flag_line = 0
         for line_str in lines:
+            # 头文件
             if is_header_data:
                 self.header += line_str
+                # 获取头文件中的大致坐标
                 if "APPROX POSITION" in line_str:
                     self.APPROX_POSITION = list(filter(None, line_str.split(" ")))[0:3]
                     self.APPROX_POSITION = [float(i) for i in self.APPROX_POSITION]
 
+                # 获取观测值类型
+                if "SYS / # / OBS TYPES" in line_str:
+                    # 第一行
+                    if line_str[0] == "G" or line_str[0] == "E" or line_str[0] == "C" or line_str[0] == "R":
+                        satellite_type = line_str[0]
+                        obs_number = int(line_str[4:6])
+                        obstypelines = math.ceil(obs_number / 13)
+                        current_ln = 1
+                        if obs_number > 13:
+                            ot = line_str[7:58].split(" ")
+                        else:
+                            ot = line_str[7:4 * obs_number - 1 + 7].split(" ")
+                        current_ln += 1
+                        continue
+                    # 其他行 
+                    if current_ln != 1:
+                        if obs_number >= current_ln * 13:
+                            ot = ot + line_str[7:58].split(" ")
+                            current_ln += 1
+                            continue
+                        else:
+                            ot = ot + line_str[7:4 * (obs_number - 13 * (current_ln - 1)) - 1 + 7].split(" ")
+                        if current_ln == obstypelines:
+                            if satellite_type == "G":
+                                self.GPS_OBS_TYPE = ot
+                            elif satellite_type == "C":
+                                self.BeiDou_OBS_TYPE = ot
+                            elif satellite_type == "E":
+                                self.Galileo_OBS_TYPE = ot
+                            elif satellite_type == "R":
+                                self.GLONASS_OBS_TYPE = ot
+                            current_ln = 1
+                            continue
+
                 if "END OF HEADER" in line_str:
                     is_header_data = False
             else:
+                # 读取数据
                 if ">" in line_str:
-                    dateinfo = line_str[2:-1]
-
-                    n = int(list(filter(None, dateinfo.split(" ")))[7])
+                    # "> 2024 09 20 00 31 00.0000000  0 60       -.000171399986"
+                    dateinfo = line_str
+                    n = int(line_str[33:35])
+                    # 卫星状态码
+                    code = int(dateinfo[31:32])
+                    if code != 0:
+                        error_flag_line = n
+                        continue
                 else:
-                    s_info.append(line_str)
-                    if len(s_info) == n:
-                        self.epochs.append(Epoch(dateinfo, s_info))
-                        dateinfo = ""
-                        s_info = []
+                    # 遇到错误代码的处理方式
+                    if error_flag_line != 0:
+                        error_flag_line -= 1
+                        continue
+
+                    if line_str[0][0] == "C":
+                        self.beidou_obs_list.append(self.format_one_line(line_str, dateinfo))
+                    elif line_str[0][0] == "E":
+                        self.galileo_obs_list.append(self.format_one_line(line_str, dateinfo))
+                    elif line_str[0][0] == "G":
+                        self.gps_obs_list.append(self.format_one_line(line_str, dateinfo))
+                    elif line_str[0][0] == "R":
+                        self.glonass_obs_list.append(self.format_one_line(line_str, dateinfo))
+
+    @staticmethod
+    def format_one_line(line: str, dateinfo) -> list:
+        # "> 2024 09 20 00 31 00.0000000  0 60       -.000171399986"
+        dateinfo = dateinfo[2:29]
+        l = []
+        temp_date_str = list(filter(None, dateinfo.split(" ")))
+        obs_date = datetime(int(temp_date_str[0]), int(temp_date_str[1]), int(temp_date_str[2]), int(temp_date_str[3]),
+                            int(temp_date_str[4]), int(temp_date_str[5][0:2]),
+                            int((float(temp_date_str[5]) - int(temp_date_str[5][0:2])) * 1000000)
+                            )
+        l.append(line[0:3])
+        l.append(obs_date)
+        start_l = 5
+        while start_l < len(line):
+            u = line[start_l:start_l + 13]
+            if u != "             ":
+                l.append(float(u))
+            else:
+                l.append(None)
+            start_l += 16
+        return l
 
 
 if __name__ == "__main__":
-    r3 = RINEX3_O("../data/ABMF00GLP_R_20242450000_01D_30S_MO.rnx")
-    print(r3.epochs[0].GPS_observations[0].PRN)
-    print(r3.epochs[0].GPS_observations[0].pseudorange)
+    r3 = RINEX3_O("../data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
