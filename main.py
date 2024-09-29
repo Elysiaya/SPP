@@ -7,34 +7,8 @@ from RINEX.RINEX3_N import RINEX3_N
 from RINEX.RINEX3_O import RINEX3_O
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
+from Saastamoinen import Saastamoinen
 from XYZ2ENU import XYZ2ENU
-
-
-def Saastamoinen(h, hrel, fai, z):
-    """
-    Saastamoinen 模型计算对流层延迟
-    :param z: 天顶角
-    :param fai: 测站的纬度
-    :param hrel: 相对湿度
-    :param h:海拔高度
-    :return:
-    """
-    # 使用标准大气模型
-
-    # p为大气压力
-    p = 1013.25 * math.pow(1 - 2.2557e-5 * h, 5.2568)
-    # t为大气绝对温度
-    t = 15 - 6.5e-3 * h + 273.15
-    # e为大气水汽压力
-    e = 6.108 * math.exp((17.15 * t - 4684.0) / (t - 38.45)) * hrel
-    # 静力学延迟（干延迟）
-    T_h = 0.0022768 * p / (1 - 0.00266 * math.cos(2 * fai) - 0.00028 * h * 1e-3) * (1 / math.cos(z))
-    # 湿延迟
-    T_w = 0.0022768 * (1255 / t + 0.05) * e * (1 / math.cos(z))
-    # 总延迟
-    T_r = T_h + T_w
-    return T_r
-
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
@@ -43,7 +17,7 @@ C = 2.99792458e8  # 真空中的光速（m/s）
 # 读取文件
 rinex_n = RINEX3_N("./data/N/BRDM00DLR_S_20242640000_01D_MN.rnx")
 rinex_o = RINEX3_O("./data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
-# 筛选GPS卫星
+# 筛选GPS卫星星历
 GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 
 # e = 30
@@ -79,7 +53,6 @@ while True:
         # 选择对应的星历
         Ephemeris = GPS_Ephemeris_by_date[GPS_Ephemeris_by_date["PRN"] == PRN].iloc[0].tolist()
         GSO = GPS_satellite_orbit(Ephemeris)
-        # print(PRN, pseudo_range)
 
         # 计算卫星信号发射的概略时刻
         dtr = X0[3]  # 将接收机钟差赋值到dtr
