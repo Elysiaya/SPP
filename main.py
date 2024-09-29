@@ -27,7 +27,7 @@ GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 # GPS_observations_date = rinex_o.epochs[e].date
 
 # 根据时间筛选历元
-GPS_observations_date = datetime.datetime(2024, 9, 20, 0, 0,30)
+GPS_observations_date = datetime.datetime(2024, 9, 20, 4, 8, 30)
 GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
 observations = GPS_observations
 print(f"共有 {observations.shape[0]} 颗卫星")
@@ -44,7 +44,7 @@ A = []
 L = []
 P = []
 while True:
-    for _,observation in observations.iterrows():
+    for _, observation in observations.iterrows():
         obs1 = GPS_Satellite_observations(observation)
         # 卫星PRN
         PRN = obs1.PRN
@@ -85,10 +85,10 @@ while True:
         try:
             # 计算对流层延迟
             R_s, A_s, H_s, B_r = XYZ2ENU(satellite_position, X0[0:3])
-            dtrop = Saastamoinen(H_s, 0, B_r, 0.5*math.pi-H_s)
+            dtrop = Saastamoinen(H_s, 0, B_r, 0.5 * math.pi - H_s)
+            print(dtrop)
             P.append(H_s)
         except:
-            print("//////")
             dtrop = 0
         dtrop = 0
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
@@ -110,11 +110,9 @@ while True:
         L = []
         A = []
         P = []
+        print("=" * 20)
     else:
-        print(f"接收机坐标为:{X0}")
-        # print(
-        #     f"总偏差:{math.sqrt((X0[0] - rinex_o.APPROX_POSITION[0]) ** 2 + (X0[1] - rinex_o.APPROX_POSITION[1]) ** 2 + (X0[2] - rinex_o.APPROX_POSITION[2]) ** 2)}")
-        # print(f"高度偏差={X0[2] - rinex_o.APPROX_POSITION[2]}")
+        print(f"接收机坐标为:{X0[0:3]}")
         STA_X = -0.226775027647810E+07
         STA_Y = 0.500915448294720E+07
         STA_Z = 0.322129434237148E+07

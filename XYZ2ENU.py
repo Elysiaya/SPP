@@ -41,9 +41,9 @@ def xyz2blh(xyz):  # 空间直角坐标转换为大地坐标
 def XYZ2ENU(X_satellite: list[float], X_receiver: list[float]):
     """
     计算卫星的站心坐标,所有角度以弧度制表示
-    :param X_satellite: 卫星在ECEF中的坐标向量XYZ
-    :param X_receiver: 接收机在ECEF中的坐标向量XYZ
-    :return:r为卫星向径，A为卫星方位角，h为卫星的高度角。
+    :param X_satellite: 卫星在 ECEF 中的坐标向量XYZ
+    :param X_receiver: 接收机在 ECEF 中的坐标向量XYZ
+    :return:r为卫星向径，A为卫星方位角，h为卫星的高度角, B为接收机的纬度
     """
     B, L, _ = xyz2blh(X_receiver)
     s = np.array(X_satellite)
