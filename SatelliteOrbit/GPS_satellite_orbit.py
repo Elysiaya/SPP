@@ -1,5 +1,5 @@
 import math
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from typing import List, Any
 
 
@@ -22,7 +22,7 @@ class GPS_satellite_orbit:
 
         # BROADCAST ORBIT – 1
         self.IODE = DataBlock[5]
-        self.Crs = -DataBlock[6]
+        self.Crs = DataBlock[6]
         self.Delta_n = DataBlock[7]
         self.M0 = DataBlock[8]
 
@@ -82,8 +82,8 @@ class GPS_satellite_orbit:
 
     def Run(self, Tsv: datetime) -> list[float | Any]:
         """
-        计算卫星位置
-        :param Tsv: 信号发射时刻，改正应在函数之外完成
+        计算指定时间的卫星位置
+        :param Tsv: 信号发射时刻
         :return:
         """
         # WGS-84基本参数
@@ -92,23 +92,20 @@ class GPS_satellite_orbit:
         Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
         GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
         C = 2.99792458e8  # 真空中的光速（m/s）
-        # print(f"GPS接收机时刻:{t}")
-        # print(f"GPS星历时刻:{self.Toc}")
-        # 接收机时刻转换为GPS时，单位秒
-        # obs_time = self.NYR2GPST(obs_time)
-        #
-        # Toe = self.Toe_Time_of_Ephemeris + self.GPS_Week * 7 * 24 * 3600  # Toe与Toc时间同步
-        # Delta_t = obs_time - Toe
-        # self.sat_clk_error = self.SV_clock_drift_rate * math.pow(Delta_t,
-        #                                                          2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD
-        # dtr = X0[3] / C
-        # dtsi = self.sat_clk_error
-        # dtsii = psi / C - dtr + dtsi
-        # TSV = obs_time - dtsii
-        # while True:
         # 计算规划时间，Tk等于发射时刻与参考时刻的时间差
         Toe = self.Toc
-        Tk = (Tsv - Toe).total_seconds()
+        Tk0 = (Tsv - Toe).total_seconds()
+        while True:
+            Delta_t = Tk0
+            self.sat_clk_error = self.SV_clock_drift_rate * math.pow(Delta_t,
+                                                                     2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD
+            Tk = (Tsv - Toe).total_seconds() + self.sat_clk_error
+            if abs(Tk - Tk0) < 10e-8:
+                # print("="*10+"Tk迭代完成"+"="*10)
+                break
+            else:
+                # print(f"Tk:{Tk}")
+                Tk0 = Tk
 
         # 计算平近点角
         a = self.sqrt_A ** 2  # 轨道长半轴
@@ -147,13 +144,11 @@ class GPS_satellite_orbit:
         r = a * (1 - self.e_Eccentricity * math.cos(E)) + Delta_r
         i = self.i0 + self.IDOT * Tk + Delta_i
         # 升交点赤经
-        omega = self.OMEGA0 + (self.OMEGA_DOT - Radv) * Tk - Radv * self.Toe_Time_of_Ephemeris
+        L = self.OMEGA0 + (self.OMEGA_DOT - Radv) * Tk - Radv * self.Toe_Time_of_Ephemeris
         # 计算Tsv时刻的卫星位置
-        X = math.cos(u) * r * math.cos(omega) - math.sin(u) * r * math.cos(i) * math.sin(omega)
-        Y = math.cos(u) * r * math.sin(omega) + math.sin(u) * r * math.cos(i) * math.cos(omega)
+        X = math.cos(u) * r * math.cos(L) - math.sin(u) * r * math.cos(i) * math.sin(L)
+        Y = math.cos(u) * r * math.sin(L) + math.sin(u) * r * math.cos(i) * math.cos(L)
         Z = math.sin(u) * r * math.sin(i)
 
         satellite_position = [X, Y, Z]
         return satellite_position
-
-        # print(f"{self.PRN}卫星在{Tsv}秒位置", [X, Y, Z])

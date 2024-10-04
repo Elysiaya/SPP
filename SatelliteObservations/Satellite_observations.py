@@ -11,11 +11,11 @@ class GPS_Satellite_observations:
         if c1 and c2:
             self.pseudorange = self.__get_pseudo_range(c1, c2)
         elif c1 is not None:
-            self.pseudorange = self.select_best(obs=obs, frequency="C1")
+            self.pseudorange = c1
         elif c2 is not None:
-            self.pseudorange = self.select_best(obs=obs, frequency="C2")
+            self.pseudorange = c2
         elif c5 is not None:
-            self.pseudorange = self.select_best(obs=obs, frequency="C5")
+            self.pseudorange = c5
 
     @staticmethod
     def __get_pseudo_range(C1_pseudo_range: float, C2_pseudo_range: float) -> float:
@@ -44,7 +44,7 @@ class GPS_Satellite_observations:
         prior = "PWCSLXYMND"
         for p in prior:
             obs_type = frequency + p
-            if (obs_type in obs) and not(pd.isnull(obs[obs_type])):
+            if (obs_type in obs) and not (pd.isnull(obs[obs_type])):
                 return obs[obs_type]
 
         return None

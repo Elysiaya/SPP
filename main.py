@@ -27,7 +27,7 @@ GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 # GPS_observations_date = rinex_o.epochs[e].date
 
 # 根据时间筛选历元
-GPS_observations_date = datetime.datetime(2024, 9, 20, 4, 8, 30)
+GPS_observations_date = datetime.datetime(2024, 9, 20, 14, 45, 0)
 GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
 observations = GPS_observations
 print(f"共有 {observations.shape[0]} 颗卫星")
@@ -75,6 +75,10 @@ while True:
                 t0si = t1si
 
         # print(f"satellite_position = {satellite_position}")
+        # 进行地球自传改正
+        a = Radv * t1si
+        satellite_position = np.array(
+            [[math.cos(a), math.sin(a), 0], [-math.sin(a), math.cos(a), 0], [0, 0, 1]]) @ np.array(satellite_position)
 
         R = Rsr
         b0si = (X0[0] - satellite_position[0]) / R
@@ -82,15 +86,15 @@ while True:
         b2si = (X0[2] - satellite_position[2]) / R
         b3si = 1
         A.append([b0si, b1si, b2si, b3si])
-        try:
-            # 计算对流层延迟
-            R_s, A_s, H_s, B_r = XYZ2ENU(satellite_position, X0[0:3])
-            dtrop = Saastamoinen(H_s, 0, B_r, 0.5 * math.pi - H_s)
-            print(dtrop)
-            P.append(H_s)
-        except:
-            dtrop = 0
-        dtrop = 0
+        # 计算对流层延迟
+        R_s, A_s, H_s, B_r = XYZ2ENU(satellite_position, X0[0:3])
+        dtrop = Saastamoinen(H_s, 0, B_r, 0.5 * math.pi - H_s)
+        P.append(H_s)
+
+        if H_s < 5 / 180 * math.pi:
+            print(f"{GSO.PRN}卫星的高度角为{H_s},{15 / 180 * math.pi}")
+
+        # dtrop = 0
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
         l = pseudo_range - R + C * dts - dtrop - diono + D_RTCM
@@ -110,16 +114,19 @@ while True:
         L = []
         A = []
         P = []
-        print("=" * 20)
     else:
         print(f"接收机坐标为:{X0[0:3]}")
         STA_X = -0.226775027647810E+07
         STA_Y = 0.500915448294720E+07
         STA_Z = 0.322129434237148E+07
         print(f"平面偏差={math.sqrt((X0[0] - STA_X) ** 2 + (X0[1] - STA_Y) ** 2)}")
+
+        print(f"Delta_X={X0[0] - STA_X}")
+        print(f"Delta_Y={X0[1] - STA_Y}")
+        print(f"Delta_Z={X0[2] - STA_Z}")
+
         print(f"接收机钟差为:{X0[3] / C}")
         # G = np.linalg.inv(A.T @ A)
         # HDOP = math.sqrt(G[0][0] + G[1][1])
         # print(HDOP)
-
         break
