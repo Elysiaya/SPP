@@ -43,9 +43,9 @@ def XYZ2ENU(X_satellite: list[float] or np.ndarray, X_receiver: list[float]):
     计算卫星的站心坐标,所有角度以弧度制表示
     :param X_satellite: 卫星在 ECEF 中的坐标向量XYZ
     :param X_receiver: 接收机在 ECEF 中的坐标向量XYZ
-    :return:r为卫星向径，A为卫星方位角，h为卫星的高度角, B为接收机的纬度
+    :return:r为卫星向径，A为卫星方位角，h为卫星的高度角, (B, L, H)为接收机的经纬度坐标，B纬度，L经度，H高度
     """
-    B, L, _ = xyz2blh(X_receiver)
+    B, L, H = xyz2blh(X_receiver)
     s = np.array(X_satellite)
     r = np.array(X_receiver)
     R = np.array([[-math.sin(L), math.cos(L), 0], [-math.sin(B) * math.cos(L), -math.sin(B) * math.sin(L), math.cos(B)],
@@ -65,7 +65,7 @@ def XYZ2ENU(X_satellite: list[float] or np.ndarray, X_receiver: list[float]):
     # 卫星高度角
     h = math.atan2(U, math.sqrt(E ** 2 + N ** 2))
     h = abs(h)
-    return r, A, h, B
+    return r, A, h, (B, L, H)
 
 
 if __name__ == '__main__':

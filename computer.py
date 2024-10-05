@@ -66,13 +66,16 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
         b2si = (X0[2] - satellite_position[2]) / R
         b3si = 1
         A.append([b0si, b1si, b2si, b3si])
-        # 计算对流层延迟
-        R_s, A_s, H_s, B_r = XYZ2ENU(satellite_position, X0[0:3])
-        dtrop = Saastamoinen(H_s, 0, B_r, 0.5 * math.pi - H_s)
+        # 计算对流层延迟改正量，前两次不改
+        if iter > 1:
+            R_s, A_s, H_s, BLH = XYZ2ENU(satellite_position, X0[0:3])
+            D_troposphere = Saastamoinen(BLH[2], 0, BLH[0], H_s)
+        else:
+            D_troposphere = 0
 
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
-        l = pseudo_range - R + C * dts - dtrop - diono + D_RTCM
+        l = pseudo_range - R + C * dts - D_troposphere - diono + D_RTCM
         L.append(l)
 
     return np.array(A), np.array(L)
