@@ -36,7 +36,7 @@ X0 = [1, 1, 1, 0]
 max_iteration = 20
 for iteration in range(max_iteration):
 
-    A, L = computer(observations, GPS_Ephemeris_by_date, X0=X0)
+    A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration)
 
     P = np.diag([1] * A.shape[0])
     Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)

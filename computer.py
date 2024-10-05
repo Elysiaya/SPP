@@ -13,12 +13,13 @@ GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
 C = 2.99792458e8  # 真空中的光速（m/s）
 
 
-def computer(observations, GPS_Ephemeris_by_date, X0):
+def computer(observations, GPS_Ephemeris_by_date, X0, iter):
     """
     计算矩阵A L
     :param observations:观测数据列表
     :param GPS_Ephemeris_by_date:卫星星历
     :param X0:迭代初始值
+    :param iter: 迭代次数
     :return:
     """
     A = []
