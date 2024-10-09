@@ -37,10 +37,9 @@ max_iteration = 20
 for iteration in range(max_iteration):
 
     A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration)
-
     P = np.diag([1] * A.shape[0])
-    Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
 
+    Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
     if Xi[0] > 1e-8 or Xi[1] > 1e-8 or Xi[2] > 1e-8:
         print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         X0 = X0 + Xi
@@ -52,7 +51,6 @@ for iteration in range(max_iteration):
         STA_X = -0.226775027647810E+07
         STA_Y = 0.500915448294720E+07
         STA_Z = 0.322129434237148E+07
-        print(f"平面偏差={math.sqrt((X0[0] - STA_X) ** 2 + (X0[1] - STA_Y) ** 2)}")
 
         print(f"Delta_X={X0[0] - STA_X}")
         print(f"Delta_Y={X0[1] - STA_Y}")

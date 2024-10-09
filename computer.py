@@ -6,7 +6,6 @@ from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 from Saastamoinen import Saastamoinen
 from XYZ2ENU import XYZ2ENU
 
-GPS_observations_date = datetime.datetime(2024, 9, 20, 14, 45, 0)
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
@@ -25,6 +24,7 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
     A = []
     L = []
     for _, observation in observations.iterrows():
+        GPS_observations_date = observation['Time']
         obs1 = GPS_Satellite_observations(observation)
         # 卫星PRN
         PRN = obs1.PRN
@@ -37,7 +37,8 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
         # 计算卫星信号发射的概略时刻
         dtr = X0[3]  # 将接收机钟差赋值到dtr
         dts = GSO.get_sat_clk_error(GPS_observations_date)  # 获取卫星钟差
-        t0si = pseudo_range / C - dtr + dts  # 计算信号传播时间
+        # t0si = pseudo_range / C - dtr + dts  # 计算信号传播时间
+        t0si = pseudo_range / C  # 计算信号传播时间
         while True:
             # 计算信号发射时刻
             Tsi = GPS_observations_date - datetime.timedelta(seconds=t0si)
@@ -69,7 +70,7 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
         # 计算对流层延迟改正量，前两次不改
         if iter > 1:
             R_s, A_s, H_s, BLH = XYZ2ENU(satellite_position, X0[0:3])
-            D_troposphere = Saastamoinen(BLH[2], 0, BLH[0], H_s)
+            D_troposphere = Saastamoinen(BLH[2], 0.7, BLH[0], H_s)
         else:
             D_troposphere = 0
 

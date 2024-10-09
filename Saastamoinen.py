@@ -1,14 +1,14 @@
 import math
 
 
-def Saastamoinen(h, relative_humidity, lat, z):
+def Saastamoinen(h, relative_humidity, lat, z) -> float:
     """
     Saastamoinen 模型计算对流层延迟
-    :param z: 卫星倾角
+    :param h:海拔高度
+    :param z: 卫星高度角
     :param lat: 测站的纬度
     :param relative_humidity: 相对湿度
-    :param h:海拔高度
-    :return:
+    :return:对流层延迟
     """
     # 使用标准大气模型
 

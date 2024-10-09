@@ -33,7 +33,7 @@ class GPS_satellite_orbit:
         self.sqrt_A = DataBlock[12]
 
         # BROADCAST ORBIT – 3
-        self.Toe_Time_of_Ephemeris = DataBlock[13]  #sec of GPS week
+        self.Toe_Time_of_Ephemeris = DataBlock[13]  # sec of GPS week
         self.Cic = DataBlock[14]
         self.OMEGA0 = DataBlock[15]
         self.Cis = DataBlock[16]
