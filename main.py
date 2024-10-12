@@ -20,7 +20,6 @@ GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 
 def main(GPS_observations_date: datetime.datetime):
     # 根据时间筛选历元
-    # GPS_observations_date = datetime.datetime(2024, 9, 20, 14, 45, 0)
     GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
     observations = GPS_observations
     print(f"共有 {observations.shape[0]} 颗卫星")
@@ -32,7 +31,6 @@ def main(GPS_observations_date: datetime.datetime):
     GPS_Ephemeris_by_date = GPS_Ephemeris[cond].reset_index(drop=True)
 
     # 初始化，置测站位置为1，1，1，接收机钟差为0
-    # X0 = [-0.226775027647810E+07, 0.500915448294720E+07, 0.322129434237148E+07, 0]
     X0 = [1, 1, 1, 0]
 
     # 设置最大迭代次数
