@@ -70,15 +70,23 @@ class GPS_satellite_orbit:
         delta_t = t - GPST_start_date
         return delta_t.total_seconds()
 
-    def get_sat_clk_error(self, obsdate: datetime) -> float:
+    def get_sat_clk_error(self, Tsv: datetime) -> float:
         """
-        获取卫星钟差
-        :return:卫星钟差
+        根据信号发射时间求卫星钟差
+        :param Tsv: 卫星信号发射时间
+        :return: 卫星钟差
         """
-        Delta_t = (obsdate - self.Toc).total_seconds()
-        sat_clk_error = self.SV_clock_drift_rate * math.pow(Delta_t,
-                                                            2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD
-        return sat_clk_error
+        # 设置最大迭代次数
+        MAX_ITERATIONS = 3
+        # 设定初值
+        sat_clk_error = 0
+        for _ in range(MAX_ITERATIONS):
+            Delta_t = (Tsv - self.Toc).total_seconds() + sat_clk_error
+            self.sat_clk_error = (self.SV_clock_drift_rate * math.pow(Delta_t,
+                                                                      2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias
+                                  - self.TGD)
+
+        return self.sat_clk_error
 
     def Run(self, Tsv: datetime) -> list[float | Any]:
         """
@@ -93,19 +101,7 @@ class GPS_satellite_orbit:
         GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
         C = 2.99792458e8  # 真空中的光速（m/s）
         # 计算规划时间，Tk等于发射时刻与参考时刻的时间差
-        Toe = self.Toc
-        Tk0 = (Tsv - Toe).total_seconds()
-        while True:
-            Delta_t = Tk0
-            self.sat_clk_error = self.SV_clock_drift_rate * math.pow(Delta_t,
-                                                                     2) + self.SV_clock_drift * Delta_t + self.SV_clock_bias - self.TGD
-            Tk = (Tsv - Toe).total_seconds() + self.sat_clk_error
-            if abs(Tk - Tk0) < 10e-8:
-                # print("="*10+"Tk迭代完成"+"="*10)
-                break
-            else:
-                # print(f"Tk:{Tk}")
-                Tk0 = Tk
+        Tk = (Tsv - self.Toc).total_seconds() + self.get_sat_clk_error(Tsv)
 
         # 计算平近点角
         a = self.sqrt_A ** 2  # 轨道长半轴

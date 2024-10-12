@@ -18,6 +18,7 @@ def Saastamoinen(h, relative_humidity, lat, z) -> float:
     t = 15 - 6.5e-3 * h + 273.15
     # e为大气水汽压力
     e = 6.108 * math.exp((17.15 * t - 4684.0) / (t - 38.45)) * relative_humidity
+
     # 静力学延迟（干延迟）
     z = 0.5*math.pi - z
     T_h = 0.0022768 * p / (1 - 0.00266 * math.cos(2 * lat) - 0.00028 * h * 1e-3) * (1 / math.cos(z))
