@@ -59,12 +59,12 @@ def main(GPS_observations_date: datetime.datetime):
 
             print(f"{math.sqrt((X0[0] - STA_X)**2+(X0[1] - STA_Y)**2+(X0[2] - STA_Z)**2)}")
 
-            # G = np.linalg.inv(A.T @ A)
-            # HDOP = math.sqrt(G[0][0] + G[1][1])
-            # print(HDOP)
+            G = np.linalg.inv(A.T @ A)
+            HDOP = math.sqrt(G[0][0] + G[1][1])
+            print(f"HDOP={HDOP}")
             break
 
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    main(date.iloc[50])
+    main(date.iloc[100])

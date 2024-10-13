@@ -3,8 +3,6 @@ import math
 import numpy as np
 from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
-from Saastamoinen import Saastamoinen
-from XYZ2ENU import XYZ2ENU
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
