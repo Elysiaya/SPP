@@ -42,8 +42,8 @@ def main(GPS_observations_date: datetime.datetime):
 
         Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
         if Xi[0] > 1e-6 or Xi[1] > 1e-6 or Xi[2] > 1e-6:
-            print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
             X0 = X0 + Xi
+            print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         else:
             print(f"接收机坐标为:{X0[0:3]}")
             print(f"接收机钟差为:{X0[3] / C}")
@@ -67,4 +67,4 @@ def main(GPS_observations_date: datetime.datetime):
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    main(date.iloc[720])
+    main(date.iloc[722])
