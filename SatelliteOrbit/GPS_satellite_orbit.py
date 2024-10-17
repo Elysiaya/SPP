@@ -1,6 +1,6 @@
 import math
-from datetime import datetime, date, timedelta
-from typing import List, Any
+from datetime import datetime
+from typing import Any
 
 
 class GPS_satellite_orbit:
@@ -126,6 +126,9 @@ class GPS_satellite_orbit:
 
             if 0 < E < 2 * math.pi:
                 break
+        # 相对论效应改正
+        d_prel = -2*self.e_Eccentricity*self.sqrt_A*math.sqrt(GM)*math.sin(E)/C**2
+        self.d_prel = d_prel
 
         # 求解真近点角和升交点角距
         nu = math.atan2(math.sqrt(1 - self.e_Eccentricity ** 2) * math.sin(E), (math.cos(E) - self.e_Eccentricity))

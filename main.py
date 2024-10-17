@@ -5,7 +5,7 @@ import numpy as np
 
 from RINEX.RINEX3_N import RINEX3_N
 from RINEX.RINEX3_O import RINEX3_O
-from computer import computer
+from compute import computer
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
@@ -48,7 +48,7 @@ def main(GPS_observations_date: datetime.datetime):
             print(f"接收机坐标为:{X0[0:3]}")
             print(f"接收机钟差为:{X0[3] / C}")
 
-            # WHU测站坐标
+            # 根据周解文件获取的WHU测站坐标
             STA_X = -0.226775027647810E+07
             STA_Y = 0.500915448294720E+07
             STA_Z = 0.322129434237148E+07
@@ -67,4 +67,4 @@ def main(GPS_observations_date: datetime.datetime):
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    main(date.iloc[100])
+    main(date.iloc[55])

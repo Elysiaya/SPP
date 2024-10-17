@@ -1,8 +1,11 @@
 import datetime
 import math
 import numpy as np
+
+from Saastamoinen import Saastamoinen
 from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
+from XYZ2ENU import XYZ2ENU
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
@@ -49,7 +52,7 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
             # 计算卫星和测站的几何位置
             Rsr = math.sqrt((satellite_position[0] - X0[0]) ** 2 + (satellite_position[1] - X0[1]) ** 2 + (
                     satellite_position[2] - X0[2]) ** 2)
-            t1si = Rsr/C
+            t1si = Rsr / C
             if abs(t0si - t1si) < 10e-7:
                 break
             else:
@@ -70,8 +73,9 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
 
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
-        dts = GSO.sat_clk_error
-        l = pseudo_range - R + C * dts - D_troposphere - diono + D_RTCM
+        dts = GSO.sat_clk_error  #卫星钟差
+        dtprel = GSO.d_prel  # 相对论效应改正
+        l = pseudo_range - R + C * (dts + dtprel) - D_troposphere - diono + D_RTCM
         L.append(l)
 
     return np.array(A), np.array(L)
