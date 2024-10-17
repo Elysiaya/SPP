@@ -67,4 +67,4 @@ def main(GPS_observations_date: datetime.datetime):
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    main(date.iloc[55])
+    main(date.iloc[720])

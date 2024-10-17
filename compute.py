@@ -65,11 +65,11 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
         b3si = 1
         A.append([b0si, b1si, b2si, b3si])
         # # 计算对流层延迟改正量，前两次不改
-        # if iter > 1:
-        #     R_s, A_s, H_s, BLH = XYZ2ENU(satellite_position, X0[0:3])
-        #     D_troposphere = Saastamoinen(BLH[2], 0.7, BLH[0], H_s)
-        # else:
-        D_troposphere = 0
+        if iter > 3:
+            R_s, A_s, H_s, BLH = XYZ2ENU(satellite_position, X0[0:3])
+            D_troposphere = Saastamoinen(BLH[2], 0.7, BLH[0], H_s)
+        else:
+            D_troposphere = 0
 
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
