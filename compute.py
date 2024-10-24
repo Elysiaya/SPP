@@ -11,6 +11,8 @@ Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
 C = 2.99792458e8  # 真空中的光速（m/s）
 
+# 设定截止高度角为15度
+srav = 15*math.pi/180
 
 def computer(observations, GPS_Ephemeris_by_date, X0, iter):
     """
@@ -18,7 +20,7 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
     :param observations:观测数据列表
     :param GPS_Ephemeris_by_date:卫星星历
     :param X0:迭代初始值
-    :param iter: 迭代次数
+    :param iter: 当前迭代次数
     :return:
     """
     A = []
@@ -63,19 +65,22 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
         b1si = (X0[1] - satellite_position[1]) / R
         b2si = (X0[2] - satellite_position[2]) / R
         b3si = 1
-        A.append([b0si, b1si, b2si, b3si])
+
         # # 计算对流层延迟改正量，前两次不改
         if iter > 3:
             R_s, A_s, H_s, BLH = XYZ2ENU(satellite_position, X0[0:3])
+            # 如果高度角小于截止高度角，跳过
+            if H_s<srav:
+                break
             D_troposphere = Saastamoinen(BLH[2], 0.7, BLH[0], H_s)
         else:
             D_troposphere = 0
-
         diono = 0  # 电离层延迟改正量，采用无电离层伪距观测组合值时此项为0
         D_RTCM = 0  # 对伪距的差分改证值
         dts = GSO.sat_clk_error  #卫星钟差
         dtprel = GSO.d_prel  # 相对论效应改正
         l = pseudo_range - R + C * (dts + dtprel) - D_troposphere - diono + D_RTCM
+        A.append([b0si, b1si, b2si, b3si])
         L.append(l)
 
     return np.array(A), np.array(L)
