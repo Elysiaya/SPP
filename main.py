@@ -36,7 +36,7 @@ def main(GPS_observations_date: datetime.datetime):
     max_iteration = 100000
     for iteration in range(max_iteration):
 
-        A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration)
+        A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration,10*main.pi/180)
         P = np.diag([1] * A.shape[0])
 
         Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
