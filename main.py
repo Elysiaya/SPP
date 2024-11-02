@@ -6,6 +6,7 @@ import numpy as np
 from RINEX.RINEX3_N import RINEX3_N
 from RINEX.RINEX3_O import RINEX3_O
 from compute import computer
+from plto import plto
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
@@ -21,7 +22,7 @@ def main(GPS_observations_date: datetime.datetime):
     # 根据时间筛选历元
     GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
     observations = GPS_observations
-    print(f"共有 {observations.shape[0]} 颗卫星")
+    # print(f"共有 {observations.shape[0]} 颗卫星")
 
     # 筛选星历，定义筛选范围为前后一个小时
     s_date = GPS_observations_date - datetime.timedelta(hours=1)
@@ -35,8 +36,10 @@ def main(GPS_observations_date: datetime.datetime):
     # 设置最大迭代次数
     max_iteration = 100000
     for iteration in range(max_iteration):
-
-        A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration,10*main.pi/180)
+        A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration,15*math.pi/180)
+        # print(f"在高度角范围内的卫星有{A.shape[0]}颗")
+        if A.shape[0]<4:
+            return None
         P = np.diag([1] * A.shape[0])
 
         Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
@@ -44,8 +47,6 @@ def main(GPS_observations_date: datetime.datetime):
             X0 = X0 + Xi
             # print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         else:
-            print(f"在高度角范围内的卫星有{A.shape[0]}颗")
-
             print(f"接收机坐标为:{X0[0:3]}")
             print(f"接收机钟差为:{X0[3] / C}")
 
@@ -63,9 +64,25 @@ def main(GPS_observations_date: datetime.datetime):
             # G = np.linalg.inv(A.T @ A)
             # HDOP = math.sqrt(G[0][0] + G[1][1])
             # print(f"HDOP={HDOP}")
+            return X0
             break
 
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    main(date.iloc[120])
+    # main(date.iloc[0])
+    STA_X = -0.226775027647810E+07
+    x=[]
+    y=[]
+    for i in range(500):
+        # x.append(date.iloc[10+i])
+        x.append(i)
+        pos=main(date.iloc[10+i])
+        if pos is None:
+            y.append(pos)
+        else:
+            y.append(pos[0]-STA_X)
+
+    plto(x,y)
+
+    
