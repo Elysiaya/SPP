@@ -20,7 +20,7 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
     :param observations:观测数据列表
     :param GPS_Ephemeris_by_date:卫星星历
     :param X0:迭代初始值
-    :param iter: 当前迭代次数
+    :param iter:当前迭代次数
     :return:
     """
     A = []
@@ -69,7 +69,7 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter):
         # # 计算对流层延迟改正量，前两次不改
         if iter > 3:
             R_s, A_s, H_s, BLH = XYZ2ENU(satellite_position, X0[0:3])
-            # 如果高度角小于截止高度角，跳过
+            # 如果高度角小于截止高度角，跳过这颗卫星
             if H_s<srav:
                 break
             D_troposphere = Saastamoinen(BLH[2], 0.7, BLH[0], H_s)

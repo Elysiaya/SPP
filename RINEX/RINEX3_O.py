@@ -1,9 +1,7 @@
 from datetime import datetime
 import math
-
 import pandas
 
-from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
 class RINEX3_O:
     def __init__(self, filename) -> None:
         self.header = ""
@@ -83,13 +81,15 @@ class RINEX3_O:
 
                 if "END OF HEADER" in line_str:
                     is_header_data = False
+            # 数据文件
             else:
-                # 读取数据
+                # 数据文件的文件头
                 if ">" in line_str:
                     # "> 2024 09 20 00 31 00.0000000  0 60       -.000171399986"
                     dateinfo = line_str
+                    # n为数据行数
                     n = int(line_str[33:35])
-                    # 卫星状态码
+                    # 卫星状态码,0为正常，其他为不正常
                     code = int(dateinfo[31:32])
                     if code != 0:
                         error_flag_line = n
