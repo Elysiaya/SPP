@@ -21,7 +21,7 @@ GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
 def main(GPS_observations_date: datetime.datetime):
     # 根据时间筛选历元
     GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
-    observations = GPS_observations
+    observations = GPS_observations.dropna(axis=0,subset=["C1C"])
     # print(f"共有 {observations.shape[0]} 颗卫星")
 
     # 筛选星历，定义筛选范围为前后一个小时
@@ -37,7 +37,6 @@ def main(GPS_observations_date: datetime.datetime):
     max_iteration = 100000
     for iteration in range(max_iteration):
         A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration,15*math.pi/180)
-        # print(f"在高度角范围内的卫星有{A.shape[0]}颗")
         if A.shape[0]<4:
             return None
         P = np.diag([1] * A.shape[0])
@@ -47,6 +46,7 @@ def main(GPS_observations_date: datetime.datetime):
             X0 = X0 + Xi
             # print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         else:
+            print(f"在高度角范围内的卫星有{A.shape[0]}颗")
             print(f"接收机坐标为:{X0[0:3]}")
             print(f"接收机钟差为:{X0[3] / C}")
 
@@ -70,19 +70,20 @@ def main(GPS_observations_date: datetime.datetime):
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    # main(date.iloc[0])
+    main(date.iloc[165])
     STA_X = -0.226775027647810E+07
     x=[]
     y=[]
-    for i in range(500):
-        # x.append(date.iloc[10+i])
-        x.append(i)
-        pos=main(date.iloc[10+i])
-        if pos is None:
-            y.append(pos)
-        else:
-            y.append(pos[0]-STA_X)
-
-    plto(x,y)
+    try:
+        for i in range(len(date)):
+            # x.append(date.iloc[10+i])
+            pos=main(date.iloc[i])
+            x.append(i)
+            if pos is None:
+                y.append(pos)
+            else:
+                y.append(pos[0]-STA_X)
+    except:
+        plto(x,y)
 
     
