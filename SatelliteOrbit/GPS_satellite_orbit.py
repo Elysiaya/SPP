@@ -102,7 +102,8 @@ class GPS_satellite_orbit:
         C = 2.99792458e8  # 真空中的光速（m/s）
         # 计算规划时间，Tk等于发射时刻与参考时刻的时间差
         self.sat_clk_error = self.get_sat_clk_error(Tsv)
-        Tk = (Tsv - self.Toc).total_seconds() + self.sat_clk_error
+        # Tk = (Tsv - self.Toc).total_seconds() - self.sat_clk_error
+        Tk = (Tsv - self.Toc).total_seconds()
 
         # 计算平近点角
         a = self.sqrt_A ** 2  # 轨道长半轴

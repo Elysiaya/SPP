@@ -38,7 +38,9 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter, cutoff_angle):
         # 计算卫星信号发射的概略时刻
         dtr = X0[3] / C  # 将接收机钟差赋值到dtr
         dts = 0
-        t0si = pseudo_range / C - dtr + dts  # 计算信号传播时间
+        # 设置信号传播时间的初值
+        t0si = pseudo_range / C - dtr + dts
+        # GPS_observations_date = GPS_observations_date - datetime.timedelta(seconds=dtr)
         while True:
             # 计算信号发射时刻
             Tsi = GPS_observations_date - datetime.timedelta(seconds=t0si)

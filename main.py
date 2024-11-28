@@ -22,7 +22,7 @@ def main(GPS_observations_date: datetime.datetime):
     # 根据时间筛选历元
     GPS_observations = rinex_o.gps_df[rinex_o.gps_df["Time"] == GPS_observations_date]
     observations = GPS_observations.dropna(axis=0,subset=["C1C"])
-    # print(f"共有 {observations.shape[0]} 颗卫星")
+    print(f"共有 {observations.shape[0]} 颗卫星")
 
     # 筛选星历，定义筛选范围为前后一个小时
     s_date = GPS_observations_date - datetime.timedelta(hours=1)
@@ -34,16 +34,18 @@ def main(GPS_observations_date: datetime.datetime):
     X0 = [1, 1, 1, 0]
 
     # 设置最大迭代次数
-    max_iteration = 100000
+    max_iteration = 20
     for iteration in range(max_iteration):
-        A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration,15*math.pi/180)
+        A, L = computer(observations, GPS_Ephemeris_by_date, X0, iteration,10*math.pi/180)
         if A.shape[0]<4:
+            print(f"共有 {A.shape[0]} 颗可用卫星")
             return None
         P = np.diag([1] * A.shape[0])
 
         Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
         if Xi[0] > 1e-6 or Xi[1] > 1e-6 or Xi[2] > 1e-6:
             X0 = X0 + Xi
+            print(X0)
             # print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         else:
             print(f"在高度角范围内的卫星有{A.shape[0]}颗")
@@ -65,25 +67,27 @@ def main(GPS_observations_date: datetime.datetime):
             # HDOP = math.sqrt(G[0][0] + G[1][1])
             # print(f"HDOP={HDOP}")
             return X0
-            break
 
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    main(date.iloc[165])
-    STA_X = -0.226775027647810E+07
-    x=[]
-    y=[]
-    try:
-        for i in range(len(date)):
-            # x.append(date.iloc[10+i])
-            pos=main(date.iloc[i])
-            x.append(i)
-            if pos is None:
-                y.append(pos)
-            else:
-                y.append(pos[0]-STA_X)
-    except:
-        plto(x,y)
+    main(date.iloc[509])
+
+    # 绘图相关
+    # STA_X = -0.226775027647810E+07
+    # x=[]
+    # y=[]
+    # try:
+    #     for i in range(1000):
+    #         # x.append(date.iloc[10+i])
+    #         pos=main(date.iloc[i])
+    #         x.append(i)
+    #         if pos is None:
+    #             y.append(pos)
+    #         else:
+    #             y.append(pos[0]-STA_X)
+    #     plto(x,y)
+    # except:
+    #     plto(x,y)
 
     
