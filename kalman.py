@@ -46,8 +46,6 @@ def least_square(GPS_observations_date: datetime.datetime):
         Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
         if Xi[0] > 1e-6 or Xi[1] > 1e-6 or Xi[2] > 1e-6:
             X0 = X0 + Xi
-            # print(X0)
-            # print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         else:
             # print(f"在高度角范围内的卫星有{A.shape[0]}颗")
             # print(f"接收机坐标为:{X0[0:3]}")
@@ -132,12 +130,6 @@ for i in range(300):
 y1 = [i[0] + 0.226775027647810E+07 for i in a2]
 y2 = [i[1] - 0.500915448294720E+07 for i in a2]
 y3 = [i[2] - 0.322129434237148E+07 for i in a2]
-
-# y=[]
-# for i in y1:
-#     if i<10:
-#         y.append(i)
-
 
 x = range(len(y1))
 plt.title("Kalman filtering  SPP error(XYZ)")

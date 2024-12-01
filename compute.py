@@ -3,7 +3,6 @@ import math
 import numpy as np
 
 from Saastamoinen import Saastamoinen
-from SatelliteObservations.Satellite_observations import GPS_Satellite_observations
 from SatelliteOrbit.GPS_satellite_orbit import GPS_satellite_orbit
 from XYZ2ENU import XYZ2ENU
 
@@ -12,11 +11,11 @@ GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
 C = 2.99792458e8  # 真空中的光速（m/s）
 
 
-def computer(observations, GPS_Ephemeris_by_date, X0, iter, cutoff_angle):
+def computer(observations, Ephemerides, X0, iter, cutoff_angle):
     """
     计算矩阵A L
     :param observations:观测数据列表
-    :param GPS_Ephemeris_by_date:卫星星历
+    :param Ephemeris:卫星星历
     :param X0:迭代初始值
     :param iter:当前迭代次数
     :param cutoff_angle:截止高度角(弧度制)
@@ -25,14 +24,11 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter, cutoff_angle):
     A = []
     L = []
     for _, observation in observations.iterrows():
-        GPS_observations_date = observation['Time']
-        obs1 = GPS_Satellite_observations(observation)
-        # 卫星PRN
-        PRN = obs1.PRN
-        # 卫星伪距
-        pseudo_range = obs1.pseudorange
+        observations_time = observation['Time'] #观测时间
+        PRN = observation['PRN'] #卫星号
+        pseudo_range = observation['IF_c'] #无电离层组合卫星伪距
         # 选择对应的星历
-        Ephemeris = GPS_Ephemeris_by_date[GPS_Ephemeris_by_date["PRN"] == PRN].iloc[0].tolist()
+        Ephemeris = Ephemerides[Ephemerides["PRN"] == PRN].iloc[0].tolist()
         GSO = GPS_satellite_orbit(Ephemeris)
 
         # 计算卫星信号发射的概略时刻
@@ -40,10 +36,9 @@ def computer(observations, GPS_Ephemeris_by_date, X0, iter, cutoff_angle):
         dts = 0
         # 设置信号传播时间的初值
         t0si = pseudo_range / C - dtr + dts
-        # GPS_observations_date = GPS_observations_date - datetime.timedelta(seconds=dtr)
         while True:
             # 计算信号发射时刻
-            Tsi = GPS_observations_date - datetime.timedelta(seconds=t0si)
+            Tsi = observations_time - datetime.timedelta(seconds=t0si)
             # 计算卫星在Tsi时刻的位置
             satellite_position = GSO.Run(Tsi)
             # 进行地球自传改正
