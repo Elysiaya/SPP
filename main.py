@@ -15,8 +15,7 @@ C = 2.99792458e8  # 真空中的光速（m/s）
 # 读取文件
 rinex_n = RINEX3_N("./data/N/BRDM00DLR_S_20242640000_01D_MN.rnx")
 rinex_o = RINEX3_O("./data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
-# 筛选GPS卫星星历
-# GPS_Ephemeris = rinex_n.df[rinex_n.df["PRN"].str[0] == "G"]
+# 选择GPS星历和Galileo星历
 Ephemeris = rinex_n.df[(rinex_n.df["PRN"].str[0] == "E") | (rinex_n.df["PRN"].str[0] == "G")]
 
 def main(observations_date: datetime.datetime):

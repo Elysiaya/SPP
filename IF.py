@@ -1,4 +1,4 @@
-def IF_combination(C1_pseudo_range: float, C2_pseudo_range: float,frequency1,frequency2) -> float:
+def IF_combination(C1_pseudo_range: float, C2_pseudo_range: float,frequency1: float,frequency2: float) -> float:
     """
     Ionosphere free combination
     :param C1_pseudo_range: 第1频段的伪距观测值
