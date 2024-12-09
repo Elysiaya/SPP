@@ -13,6 +13,7 @@ class RINEX3_N:
 
         print("广播星历文件读取成功,文件名:" + filename)
         print("RINEX文件版本:" + self.RINEX_VERSION)
+        print("="*70)
 
     # 获取数据的起始行
     def __get_data_start_lines(self, filename) -> int:

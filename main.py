@@ -39,7 +39,7 @@ def main(observations_date: datetime.datetime):
     Ephemeris_by_date = Ephemeris[cond].reset_index(drop=True)
 
     # 初始化，置测站位置为1，1，1，接收机钟差为0
-    X0 = [1, 1, 1, 0,0]
+    X0 = [1, 1, 1, 0, 0]
 
     # 设置最大迭代次数
     max_iteration = 20
@@ -53,7 +53,7 @@ def main(observations_date: datetime.datetime):
         Xi = np.linalg.inv(A.T @ P @ A) @ (A.T @ P @ L)
         if Xi[0] > 1e-6 or Xi[1] > 1e-6 or Xi[2] > 1e-6:
             X0 = X0 + Xi
-            print(X0)
+            # print(X0)
             # print(f"第{iteration + 1}次迭代:接收机坐标{X0[0:3]}")
         else:
             print(f"在高度角范围内的卫星有{A.shape[0]}颗")

@@ -1,9 +1,18 @@
 from datetime import datetime
 import math
 import pandas
-
+import os.path
 class RINEX3_O:
     def __init__(self, filename) -> None:
+        # 获取文件名
+        basename = os.path.basename(filename)
+        # 获取测站
+        self.observation_station_name = basename[0:4]
+        # 获取年、年纪日
+        self.year = int(basename[12:16])
+        self.doy = int(basename[16:19])
+
+
         self.header = ""
         self.APPROX_POSITION = None
         self.RINEX_VERSION: str = ""
@@ -21,14 +30,27 @@ class RINEX3_O:
         self.Galileo_OBS_TYPE = []
         self.GLONASS_OBS_TYPE = []
 
-        self.read_observation_file(filename)
+        cache_path = os.path.join("cache",basename.split('.')[0])
+        if not os.path.exists(cache_path):
+            self.read_observation_file(filename)
 
-        self.gps_df = pandas.DataFrame(self.gps_obs_list, columns=["PRN", "Time"] + self.GPS_OBS_TYPE)
-        self.beidou_df = pandas.DataFrame(self.beidou_obs_list, columns=["PRN", "Time"] + self.BeiDou_OBS_TYPE)
-        self.galileo_df = pandas.DataFrame(self.galileo_obs_list, columns=["PRN", "Time"] + self.Galileo_OBS_TYPE)
-        self.glonass_df = pandas.DataFrame(self.glonass_obs_list, columns=["PRN", "Time"] + self.GLONASS_OBS_TYPE)
-        print("观测文件读取成功,文件名:" + filename)
+            self.gps_df = pandas.DataFrame(self.gps_obs_list, columns=["PRN", "Time"] + self.GPS_OBS_TYPE)
+            self.beidou_df = pandas.DataFrame(self.beidou_obs_list, columns=["PRN", "Time"] + self.BeiDou_OBS_TYPE)
+            self.galileo_df = pandas.DataFrame(self.galileo_obs_list, columns=["PRN", "Time"] + self.Galileo_OBS_TYPE)
+            self.glonass_df = pandas.DataFrame(self.glonass_obs_list, columns=["PRN", "Time"] + self.GLONASS_OBS_TYPE)
+            os.makedirs(cache_path)
+            self.gps_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"GPS.h5"),mode="w",key="df")
+            self.beidou_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"Beidou.h5"),mode="w",key="df")
+            self.galileo_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"Galileo.h5"),mode="w",key="df")
+            self.glonass_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"Glonass.h5"),mode="w",key="df")
+        else:
+            self.gps_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"GPS"+".h5"),key="df")
+            self.beidou_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"Beidou"+".h5"),key="df")
+            self.galileo_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"Galileo"+".h5"),key="df")
+            self.glonass_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"Glonass"+".h5"),key="df")
+        print("观测文件读取成功,文件名:" + basename)
         print("RINEX文件版本:" + self.RINEX_VERSION)
+        print("="*70)
 
     def read_observation_file(self, filename):
         with open(filename, "r") as f:
@@ -133,4 +155,4 @@ class RINEX3_O:
 
 
 if __name__ == "__main__":
-    r3 = RINEX3_O("../data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
+    r3 = RINEX3_O("./data/O/WUH200CHN_R_20242640000_01D_30S_MO.rnx")
