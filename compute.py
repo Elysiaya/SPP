@@ -79,7 +79,7 @@ def computer(observations, Ephemerides, X0, iter, cutoff_angle):
         if PRN[0] =='G':
             A.append([b0si, b1si, b2si, b3si,0])
         elif PRN[0] =='E':
-            A.append([b0si, b1si, b2si, b3si,0])
+            A.append([b0si, b1si, b2si, b3si,1])
         L.append(l)
 
     return np.array(A), np.array(L)
