@@ -76,7 +76,10 @@ def computer(observations, Ephemerides, X0, iter, cutoff_angle):
         dts = GSO.sat_clk_error  #卫星钟差
         dtprel = GSO.d_prel  # 相对论效应改正
         l = pseudo_range - R + C * (dts + dtprel) - D_troposphere - diono + D_RTCM
-        A.append([b0si, b1si, b2si, b3si])
+        if PRN[0] =='G':
+            A.append([b0si, b1si, b2si, b3si,0])
+        elif PRN[0] =='E':
+            A.append([b0si, b1si, b2si, b3si,0])
         L.append(l)
 
     return np.array(A), np.array(L)

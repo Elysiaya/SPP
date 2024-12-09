@@ -39,7 +39,7 @@ def main(observations_date: datetime.datetime):
     Ephemeris_by_date = Ephemeris[cond].reset_index(drop=True)
 
     # 初始化，置测站位置为1，1，1，接收机钟差为0
-    X0 = [1, 1, 1, 0]
+    X0 = [1, 1, 1, 0,0]
 
     # 设置最大迭代次数
     max_iteration = 20
@@ -79,13 +79,13 @@ def main(observations_date: datetime.datetime):
 
 if __name__ == "__main__":
     date = rinex_o.gps_df.drop_duplicates(subset=["Time"], keep="first", inplace=False)["Time"]
-    # main(date.iloc[5])
-    es=[]
-    for i in range(200):
-        print(f"第{i}次迭代")
-        _,e = main(date.iloc[i])
-        es.append(e)
-    plt.scatter(range(len(es)),es)
-    plt.show()
+    main(date.iloc[5])
+    # es=[]
+    # for i in range(200):
+    #     print(f"第{i}次迭代")
+    #     _,e = main(date.iloc[i])
+    #     es.append(e)
+    # plt.scatter(range(len(es)),es)
+    # plt.show()
 
     

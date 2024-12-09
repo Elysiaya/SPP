@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 from RINEX.RINEX3_N import RINEX3_N
 from RINEX.RINEX3_O import RINEX3_O
 from compute import computer
-from plto import plto
 
 Radv = 7.2921151467e-5  # 地球自转角速度（rad/s）
 GM = 3.986005e14  # 地球引力常数GM（m^3/s^2）
