@@ -30,24 +30,25 @@ class RINEX3_O:
         self.Galileo_OBS_TYPE = []
         self.GLONASS_OBS_TYPE = []
 
-        cache_path = os.path.join("cache",basename.split('.')[0])
+        cache_path = os.path.join("cache")
         if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
             self.read_observation_file(filename)
 
             self.gps_df = pandas.DataFrame(self.gps_obs_list, columns=["PRN", "Time"] + self.GPS_OBS_TYPE)
             self.beidou_df = pandas.DataFrame(self.beidou_obs_list, columns=["PRN", "Time"] + self.BeiDou_OBS_TYPE)
             self.galileo_df = pandas.DataFrame(self.galileo_obs_list, columns=["PRN", "Time"] + self.Galileo_OBS_TYPE)
             self.glonass_df = pandas.DataFrame(self.glonass_obs_list, columns=["PRN", "Time"] + self.GLONASS_OBS_TYPE)
-            os.makedirs(cache_path)
-            self.gps_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"GPS.h5"),mode="w",key="df")
-            self.beidou_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"Beidou.h5"),mode="w",key="df")
-            self.galileo_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"Galileo.h5"),mode="w",key="df")
-            self.glonass_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+"Glonass.h5"),mode="w",key="df")
+
+            self.gps_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),mode="a",key="gps")
+            self.beidou_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),mode="a",key="beidou")
+            self.galileo_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),mode="a",key="galileo")
+            self.glonass_df.to_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),mode="a",key="glonass")
         else:
-            self.gps_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"GPS"+".h5"),key="df")
-            self.beidou_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"Beidou"+".h5"),key="df")
-            self.galileo_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"Galileo"+".h5"),key="df")
-            self.glonass_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+"Glonass"+".h5"),key="df")
+            self.gps_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),key="gps")
+            self.beidou_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),key="beidou")
+            self.galileo_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),key="galileo")
+            self.glonass_df = pandas.read_hdf(os.path.join(cache_path,basename.split('.')[0]+".h5"),key="glonass")
         print("观测文件读取成功,文件名:" + basename)
         print("RINEX文件版本:" + self.RINEX_VERSION)
         print("="*70)
